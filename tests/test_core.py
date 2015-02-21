@@ -6,7 +6,8 @@ import os
 import subprocess
 from time import sleep
 
-sys.path.append(os.path.abspath("../Cylinder-server/"))
+# Just make sure /Cylinder-server is appended to the path beforehand
+#sys.path.append(os.path.abspath("../Cylinder-server/"))
 
 ''' C.01 Have a test client able to connect to the server through SSL.
     Test is successful once the client connects, completes an SSL handshake,

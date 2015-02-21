@@ -3,6 +3,42 @@ __author__ = 'Adam'
 import sys
 import subprocess
 
+'''
+    Description:
+
+        Create a process as another user.
+        Basically popen with a prefixed authentication parameter.
+
+        On windows this requires the calling process/user to have impersonate, create objects, and change process token
+        privileges.
+        On Linux, sudo is used, requiring the user has the correct permissions in the sudoers file.
+
+
+    Usage:
+
+        create_process_as( Authentication, args, **kwargs)
+
+
+    Return:
+
+        Result of subprocess.popen
+
+
+    Arguments:
+
+        Authentication instance with valid credentials (windows requires the win32_token attribute to be set)
+        List/String of arguments forwarded to popen
+        dict of args also forwarded to popen
+
+
+    Example:
+
+        auth = Authentication("test","test")
+        popen_obj = create_process_as(auth, "whoami")
+        popen_obj.wait()
+        # etc...
+'''
+
 if sys.platform.startswith("win"):
     import win32process
     import useful
@@ -33,7 +69,7 @@ if sys.platform.startswith("win"):
     def create_process_as(user_auth, args=list(), **kwargs):
         if "startupinfo" not in kwargs:
             kwargs["startupinfo"] = subprocess.STARTUPINFO()
-        kwargs["startupinfo"].token = user_auth.win32_handle
+        kwargs["startupinfo"].token = user_auth.win32_token
         return subprocess.Popen(args, **kwargs)
 
 elif sys.platform in ["linux2", "darwin"]:

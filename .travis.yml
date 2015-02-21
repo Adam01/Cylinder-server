@@ -1,14 +1,19 @@
 language: python
+
 python:
     -   "2.7"
+
 before_install:
     -   sudo apt-get update
     -   pip install --upgrade setuptools
+
 install:
     -   pip install -r ./requirements_linux.txt
+
+before_script:
+    - export PATH=$PATH:$PWD/Cylinder-server
+
 script: 
 # TDD
     - nosetests ./tests
     - nosetests ./tests/unit
-#Unit tests (one per class)
-#    - ./tests/unit/authentication.py

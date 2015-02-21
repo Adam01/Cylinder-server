@@ -2,6 +2,56 @@ __author__ = 'Adam'
 
 import sys
 
+'''
+    Description:
+
+        Use available methods to authenticate supplied system credentials.
+        On windows the native LogonUser is used.
+        On Linux, PAM is available and used by default.
+        If specified, the passwd and shadow files are used - note this requires the calling user to be part of the
+        shadow group.
+
+    Usage:
+
+        Authentication(username, password, use_PAM = True)
+
+
+    Return:
+
+        Authentication instance
+
+        Authentication attributes:
+            username
+            [win32_token]
+
+    Arguments:
+
+        Username
+        Password
+
+
+    Example:
+
+        # Use PAM
+        auth = Authentication("test","test")
+
+        # Use passwd and shadow
+        # Calling process/user must be part of shadow group
+        auth = Authentication("test","test",False)
+
+    Throws:
+
+        LoginError              -   Base of all exceptions
+
+        Linux:
+        LoginNoPasswordError    -   No password has been set for the user
+        LoginLockedError        -   User account has been locked
+        LoginNoUser             -   No such user
+        LoginExpiredError       -   The user account password has expired
+        LoginInvalid            -   Invalid credentials supplied
+
+'''
+
 
 class LoginError(Exception):
     def __init__(self, msg):
@@ -43,11 +93,14 @@ if sys.platform.startswith("win"):
         def __init__(self, username, password, unused=None):
 
             try:
-                self.win32_handle = win32security.LogonUser(username, None, password,
-                                                            win32security.LOGON32_LOGON_INTERACTIVE,
-                                                            win32security.LOGON32_PROVIDER_DEFAULT,
+                self.win32_token = win32security.LogonUser(username, None, password,
+                                                           win32security.LOGON32_LOGON_INTERACTIVE,
+                                                           win32security.LOGON32_PROVIDER_DEFAULT,
                 )
             except win32security.error as e:
+
+                # TODO throw appropriate error
+
                 raise LoginError("Failed to log in as '%s': %s" % (username, e[2]))
 
             self.username = username
