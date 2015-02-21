@@ -11,9 +11,12 @@ install:
     -   pip install -r ./requirements_linux.txt
 
 before_script:
-    - export PATH=$PATH:$PWD/Cylinder-server/Cylinder-server
+    - echo $PWD
+    - echo $PATH
+    - export PYTHONPATH=$PYTHONPATH:$PWD/Cylinder-server/Cylinder-server
 
 script: 
 # TDD
+    - echo $PYTHONPATH
     - nosetests ./tests
     - nosetests ./tests/unit
