@@ -4,6 +4,7 @@ python:
 before_install:
     -   sudo apt-get update
 install:
+    -   pip install --upgrade setuptools
     -   pip install -r ./requirements_linux.txt
 script: 
 # TDD
