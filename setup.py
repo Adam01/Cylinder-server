@@ -25,6 +25,6 @@ setup(
                          "vboxapi >= 1.0",
                          "zope.interface >= 4.1.1"
                      ] + ["pywin32 >= 219"] if "win" in sys.platform else [] + [
-        "PAM >= 1.8.1"] if "linux" in sys.platform else [],
+        "python-pam >= 1.8.2"] if "linux" in sys.platform else [],
 )
 
