@@ -9,6 +9,5 @@ pyasn1-modules==0.0.5
 pycparser==2.10
 service-identity==14.0.0
 six==1.8.0
-vboxapi==1.0
 zope.interface==4.1.1
 PAM==1.8.1
