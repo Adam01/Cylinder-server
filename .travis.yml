@@ -8,10 +8,10 @@ install:
     -   pip install -r ./requirements_linux.txt
 script: 
 # TDD
-    - ./tests/test_core.py
-    - ./tests/test_file_system_procedures.py
-    - ./tests/test_file_content_procedures.py
-    - ./tests/test_metadata_procedures.py
+    - python ./tests/test_core.py
+    - python ./tests/test_file_system_procedures.py
+    - python ./tests/test_file_content_procedures.py
+    - python ./tests/test_metadata_procedures.py
     
 #Unit tests (one per class)
 #    - ./tests/unit/authentication.py
