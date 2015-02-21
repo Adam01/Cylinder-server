@@ -11,7 +11,7 @@ install:
     -   pip install -r ./requirements_linux.txt
 
 before_script:
-    - export PATH=$PATH:$PWD/Cylinder-server
+    - export PATH=$PATH:$PWD/Cylinder-server/Cylinder-server
 
 script: 
 # TDD
