@@ -95,7 +95,7 @@ class TestFileSystemProcedures(unittest.TestCase):
         e = FileSystemDirectory(path)
         e.copy_to(d, True)
 
-        FileSystemProcedures(dict(...))
+        FileSystemProcedures(dict())
 
     ''' FS.07
         The system is required to list the contents of a directory supporting various formats of results
