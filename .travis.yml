@@ -4,7 +4,7 @@ python:
 before_install:
     -   sudo apt-get update
 install:
-    -   pip -r ./requirements_linux.txt
+    -   pip install -r ./requirements_linux.txt
 script: 
 # TDD
     - ./tests/test_core.py
