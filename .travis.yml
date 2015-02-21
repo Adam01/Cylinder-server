@@ -4,19 +4,16 @@ python:
     -   "2.7"
 
 before_install:
-    -   sudo apt-get update
-    -   pip install --upgrade setuptools
+    -   pip install -U setuptools
 
 install:
-    -   pip install -r ./requirements_linux.txt
+    -   pip install -U -r ./requirements_linux.txt
 
 before_script:
-    - echo $PWD
-    - echo $PATH
-    - export PYTHONPATH=$PYTHONPATH:$PWD/Cylinder-server/Cylinder-server
+    - export PYTHONPATH=$PYTHONPATH:$PWD/Cylinder-server/
 
 script: 
 # TDD
     - echo $PYTHONPATH
-    - nosetests ./tests
-    - nosetests ./tests/unit
+    - nosetests -v ./tests
+    - nosetests -v ./tests/unit
