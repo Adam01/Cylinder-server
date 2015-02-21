@@ -10,4 +10,4 @@ pycparser==2.10
 service-identity==14.0.0
 six==1.8.0
 zope.interface==4.1.1
-pam-python==1.8.1
+python-pam==1.8.1
