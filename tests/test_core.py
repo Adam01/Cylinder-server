@@ -83,8 +83,9 @@ class C02TestUserAuthentication(unittest.TestCase):
 '''
 
 
-@unittest.skipIf(sys.platform.startswith("win"), "C.03 TestSpawnUserProcess: Requires to be run as a service "
-                                                 "(or with abilities to impersonate, see CreateProcessAsUser)")
+@unittest.skipIf(sys.platform.startswith("win") or os.environ.get('CI') is not None,
+                 "C.03 TestSpawnUserProcess: Requires to be run as a service "
+                 "(or with abilities to impersonate, see CreateProcessAsUser)")
 class C03TestSpawnUserProcess(unittest.TestCase):
     def setUp(self):
         from authentication import Authentication, LoginError
@@ -103,8 +104,9 @@ class C03TestSpawnUserProcess(unittest.TestCase):
         obj.wait()
         out, err = obj.communicate()
 
-        # Remove domain\\ and trailing \r\n
-        out = out[out.find("\\") + 1:-2]
+        if sys.platform.startswith("win"):
+            # Remove domain\\ and trailing \r\n
+            out = out[out.find("\\") + 1:-2]
 
         self.assertEquals(out, C02TestUserAuthentication.CORRECT_USERNAME)
 

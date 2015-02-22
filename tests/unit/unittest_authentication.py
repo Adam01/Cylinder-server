@@ -3,7 +3,7 @@ __author__ = 'Adam'
 import unittest
 import os
 import sys
-from authentication import Authentication, LoginInvalid
+from authentication import Authentication, LoginError
 
 
 @unittest.skipIf(os.environ.get('CI') is not None, "Cannot test user authentication on Travis CI")
@@ -20,7 +20,6 @@ class TestAuthenticationClass(unittest.TestCase):
         pass
 
     def test_construct(self):
-        from authentication import Authentication, LoginError
 
         # Invalid number of args
         self.assertRaises(TypeError, Authentication)
