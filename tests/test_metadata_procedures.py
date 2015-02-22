@@ -3,30 +3,36 @@ __author__ = 'Adam'
 import unittest
 import sys
 import os
+import getpass
+import tempfile
+import random
+import string
 
 
-class TestSSLConnectivity(unittest.TestCase):
-    def setUp(self):
-        pass
+class TestMetaDataProcedures(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.user = getpass.getuser()
+        handle, cls.file_path = tempfile.mkstemp()
+        cls.file_size = random.randint(1000, 100000)
+        cls.file_data = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(cls.file_size))
+        os.write(handle, cls.file_data)
+        os.close(handle)
 
-    def tearDown(self):
-        pass
+    @classmethod
+    def tearDownClass(cls):
+        os.remove(cls.file_path)
 
     def test_get_entity_owner(self):
-        path = ""
-        e = FileSystemEntity(path)
-        e.get_owner()
-        pass
+        from fsentity import EntityMetadata
 
-    def test_get_entity_group(self):
-        path = ""
-        e = FileSystemEntity(path)
-        e.get_owner_group()
-        pass
+        e = EntityMetadata(self.file_path)
+        self.assertEquals(e.owner, self.user, "Owner of file does not match current user")
 
     def test_get_entity_permissions(self):
-        path = ""
-        e = FileSystemEntity(path)
+        from fsentity import EntityMetadata
+
+        e = EntityMetadata(self.file_path)
         e.get_access_matrix()
         e.get_user_acccess()
         e.get_group_access()
@@ -37,18 +43,20 @@ class TestSSLConnectivity(unittest.TestCase):
         pass
 
     def test_get_entity_timestamps(self):
-        path = ""
-        e = FileSystemEntity(path)
-        e.get_last_accessed()
-        e.get_last_modified()
-        e.get_created()
-        pass
+        from fsentity import EntityMetadata
+
+        e = EntityMetadata(self.file_path)
+        print e.accessed
+        print e.created
+        print e.modified
 
     def test_get_entity_sizes(self):
-        path = ""
-        e = FileSystemEntity(path)
-        e.get_size()  # by default uses stat along
-        e.get_file().get_size()  # count contents
+        from fsentity import EntityMetadata, FileSystemEntity
+
+        e = FileSystemEntity(self.file_path)
+        self.assertEquals(e.get_size(), self.file_size, "Expected file size not returned")
+        self.assertEquals(e.get_type_instance().get_size(), self.file_size, "Expected file size not returned")
+
         e.get_directory().get_size()  # count size of contents, recursively
         e.get_directory().get_content_count()  # get number of child items
 

@@ -6,6 +6,7 @@ import os
 import tempfile
 import shutil
 
+
 class TestFileSystemProcedures(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -13,7 +14,7 @@ class TestFileSystemProcedures(unittest.TestCase):
         print "Test directory created at: " + cls.test_dir
 
         # Create a static dir (this won't change throughout the tests)
-        cls.static_dir = cls.test_dir + "/Static"
+        cls.static_dir = os.path.join(cls.test_dir, "Static")
 
         os.mkdir(cls.static_dir)
         os.mkdir(cls.static_dir + "/D1")
@@ -28,18 +29,18 @@ class TestFileSystemProcedures(unittest.TestCase):
         cls.expected_static_list = ["D1/", "D2/", "A", "B"]
 
         # Move file vars
-        cls.file_move_source_path = cls.test_dir + "/FileMove"
-        cls.file_move_target_dir = cls.test_dir + "/FileMoveDir/"
-        cls.file_move_target_name = cls.test_dir + "FileMoved"
-        cls.file_move_target_path = cls.file_move_target_dir + cls.file_move_target_name
+        cls.file_move_source_path = os.path.join(cls.test_dir, "FileMove")
+        cls.file_move_target_dir = os.path.join(cls.test_dir, "FileMoveDir")
+        cls.file_move_target_name = os.path.join(cls.test_dir, "FileMoved")
+        cls.file_move_target_path = os.path.join(cls.file_move_target_dir, cls.file_move_target_name)
 
         os.mkdir(cls.file_move_target_dir)
 
         # Copy file vars
-        cls.file_copy_source_path = cls.test_dir + "/FileCopy"
-        cls.file_copy_target_dir = cls.test_dir + "/FileCopyDir/"
-        cls.file_copy_target_name = cls.test_dir + "FileCopied"
-        cls.file_copy_target_path = cls.file_copy_target_dir + cls.file_copy_target_name
+        cls.file_copy_source_path = os.path.join(cls.test_dir, "FileCopy")
+        cls.file_copy_target_dir = os.path.join(cls.test_dir, "FileCopyDir")
+        cls.file_copy_target_name = os.path.join(cls.test_dir, "FileCopied")
+        cls.file_copy_target_path = os.path.join(cls.file_copy_target_dir, cls.file_copy_target_name)
 
         os.mkdir(cls.file_copy_target_dir)
 
@@ -52,11 +53,12 @@ class TestFileSystemProcedures(unittest.TestCase):
         cls.dir_copy_target_files = ["A", "B"]
 
         # Others
-        cls.file_delete = cls.test_dir + "/FileDelete"
-        cls.file_create = cls.test_dir + "/FileCreate"
+        cls.file_delete = os.path.join(cls.test_dir, "FileDelete")
+        cls.file_create = os.path.join(cls.test_dir, "FileCreate")
         cls.file_create_contents = "Abcdefg123"
 
-        cls.dir_create = "/D1"
+        cls.dir_create_name = "D1"
+        cls.dir_create_path = os.path.join(cls.test_dir, cls.dir_create_name)
 
         # Create the specified files
 
@@ -69,7 +71,6 @@ class TestFileSystemProcedures(unittest.TestCase):
         with open(cls.file_delete, "w") as f:
             f.write("Abcdefg123")
 
-
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.test_dir)
@@ -80,6 +81,8 @@ class TestFileSystemProcedures(unittest.TestCase):
     '''
 
     def test_FS01_create_file(self):
+        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+
         e = FileSystemDirectory(self.test_dir)
         e.create_file("FileCreate")
 
@@ -93,6 +96,7 @@ class TestFileSystemProcedures(unittest.TestCase):
         self.assertTrue(os.path.isfile(self.file_create), "CreateFile was not created by FileSystemProcedures")
 
     def test_FS01_create_file_contents(self):
+        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
         e = FileSystemDirectory(self.test_dir)
         e.create_file("FileCreate", self.file_create_contents)
 
@@ -119,10 +123,12 @@ class TestFileSystemProcedures(unittest.TestCase):
     '''
 
     def test_FS02_create_directory(self):
-        e = FileSystemDirectory(self.test_dir)
-        e.create_directory("D1")
+        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
 
-        self.assertTrue(os.path.isdir(self.dir_create), "FileSystemDirectory didn't manage to create a directory")
+        e = FileSystemDirectory(self.test_dir)
+        e.create_directory(self.dir_create_name)
+
+        self.assertTrue(os.path.isdir(self.dir_create_path), "FileSystemDirectory didn't manage to create a directory")
 
     ''' FS.03
         The system is required to move a file-system entity to another location in the file system.
@@ -132,6 +138,8 @@ class TestFileSystemProcedures(unittest.TestCase):
     '''
 
     def test_FS03_move_entity(self):
+        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+
         e = FileSystemEntity(self.file_move_source_path)
         d = FileSystemDirectory(self.file_move_target_dir)
 
@@ -148,9 +156,11 @@ class TestFileSystemProcedures(unittest.TestCase):
         The test is successful if the system is able to delete a file that must belong to the current user.
     '''
 
-    def test_FS04_delete_entity(self):
+    def test_FS04_remove_entity(self):
+        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+
         e = FileSystemEntity(self.file_delete)
-        e.delete()
+        e.remove()
         self.assertFalse(os.path.isfile(self.file_delete), "FileSystemEntity didn't delete specified file")
 
     ''' FS.05
@@ -160,6 +170,8 @@ class TestFileSystemProcedures(unittest.TestCase):
     '''
 
     def test_FS05_copy_entity(self):
+        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+
         e = FileSystemEntity(self.file_copy_source_path)
         d = FileSystemDirectory(self.file_copy_target_dir)
 
@@ -178,9 +190,11 @@ class TestFileSystemProcedures(unittest.TestCase):
     '''
 
     def test_FS06_copy_directory(self):
+        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+
         sd = FileSystemDirectory(self.dir_copy_source_path)
-        td = FileSystemDirectory(self.dir_copy_target_dir, self.dir_copy_target_name)
-        sd.copy_to(td)
+        td = FileSystemDirectory(self.dir_copy_target_dir)
+        sd.copy_to(td, self.dir_copy_target_name)
 
         self.assertTrue(os.path.isdir(self.dir_copy_target_path),
                         "FileSystemDirectory didn't manage to copy a directory")
@@ -211,6 +225,8 @@ class TestFileSystemProcedures(unittest.TestCase):
     '''
 
     def test_FS07_list_directory(self):
+        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+
         e = FileSystemDirectory(self.static_dir)
         l = e.list()
         self.assertListEqual(l, self.expected_static_list)

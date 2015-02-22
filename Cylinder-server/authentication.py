@@ -7,7 +7,7 @@ import sys
 
         Use available methods to authenticate supplied system credentials.
         On windows the native LogonUser is used.
-        On Linux, PAM is available and used by default.
+        On Linux, PAM is required and used by default.
         If specified, the passwd and shadow files are used - note this requires the calling user to be part of the
         shadow group.
 
@@ -28,12 +28,13 @@ import sys
 
         Username
         Password
-
+        [use_PAM] - If False /etc/passwd and /etc/shadow are used
 
     Example:
 
         # Use PAM
         auth = Authentication("test","test")
+        print "Authenticated %s" % auth.username
 
         # Use passwd and shadow
         # Calling process/user must be part of shadow group
@@ -43,7 +44,7 @@ import sys
 
         LoginError              -   Base of all exceptions
 
-        Linux:
+        Linux (for now):
         LoginNoPasswordError    -   No password has been set for the user
         LoginLockedError        -   User account has been locked
         LoginNoUser             -   No such user

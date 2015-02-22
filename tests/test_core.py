@@ -4,7 +4,6 @@ import unittest
 import sys
 import os
 import subprocess
-from time import sleep
 
 # Just make sure /Cylinder-server is appended to the path beforehand
 #sys.path.append(os.path.abspath("../Cylinder-server/"))
@@ -14,7 +13,6 @@ from time import sleep
     and is able to transmit data back and forth (using an echo server)
 
     Not sure how this can be tested internally...
-'''
 
 
 class C01TestSSLConnectivity(unittest.TestCase):
@@ -29,6 +27,7 @@ class C01TestSSLConnectivity(unittest.TestCase):
 
     def test_1_ssl_data(self):
         pass
+'''
 
 
 '''
@@ -57,7 +56,7 @@ class C02TestUserAuthentication(unittest.TestCase):
     def test_user_authentication(self):
         from authentication import Authentication, LoginError
 
-        auth = Authentication(self.CORRECT_USERNAME, self.CORRECT_PASSWORD)
+        auth = Authentication(self.CORRECT_USERNAME, self.CORRECT_PASSWORD, False)
 
         self.assertIsInstance(auth, Authentication)
         self.assertEquals(auth.username, self.CORRECT_USERNAME)
@@ -73,7 +72,7 @@ class C02TestUserAuthentication(unittest.TestCase):
         self.assertIsInstance(auth, Authentication)
         self.assertEquals(auth.username, self.CORRECT_USERNAME)
 
-        self.assertRaises(InvalidLogin, Authentication, self.INCORRECT_USERNAME, self.INCORRECT_PASSWORD, True)
+        self.assertRaises(LoginError, Authentication, self.INCORRECT_USERNAME, self.INCORRECT_PASSWORD, True)
 
 
 '''
@@ -88,7 +87,7 @@ class C02TestUserAuthentication(unittest.TestCase):
                  "(or with abilities to impersonate, see CreateProcessAsUser)")
 class C03TestSpawnUserProcess(unittest.TestCase):
     def setUp(self):
-        from authentication import Authentication, LoginError
+        from authentication import Authentication
 
         self.auth = Authentication(C02TestUserAuthentication.CORRECT_USERNAME,
                                    C02TestUserAuthentication.CORRECT_PASSWORD)
@@ -105,8 +104,10 @@ class C03TestSpawnUserProcess(unittest.TestCase):
         out, err = obj.communicate()
 
         if sys.platform.startswith("win"):
-            # Remove domain\\ and trailing \r\n
-            out = out[out.find("\\") + 1:-2]
+            # Remove domain\\
+            out = out[out.find("\\") + 1:]
+        # Remove trailing \r\n
+        out = out[:-2]
 
         self.assertEquals(out, C02TestUserAuthentication.CORRECT_USERNAME)
 

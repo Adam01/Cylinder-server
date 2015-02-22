@@ -10,8 +10,8 @@ import subprocess
         Basically popen with a prefixed authentication parameter.
 
         On windows this requires the calling process/user to have impersonate, create objects, and change process token
-        privileges.
-        On Linux, sudo is used, requiring the user has the correct permissions in the sudoers file.
+        privileges (AKA Local Service user)
+        On Linux sudo is used requiring the user has the correct permissions in the sudoers file.
 
 
     Usage:
@@ -26,7 +26,7 @@ import subprocess
 
     Arguments:
 
-        Authentication instance with valid credentials (windows requires the win32_token attribute to be set)
+        Authentication instance with valid username credential (windows requires the win32_token attribute to be set)
         List/String of arguments forwarded to popen
         dict of args also forwarded to popen
 
