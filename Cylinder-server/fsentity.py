@@ -30,7 +30,7 @@ class EntityMetadata:
         elif sys.platform.startswith("linux"):
             import pwd
 
-            self.owner = pwd.getpwuid(stat_result.uid).pw_name
+            self.owner = pwd.getpwuid(stat_result.st_uid).pw_name
 
 
 def get_enum_type(mode):
