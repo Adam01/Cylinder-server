@@ -18,10 +18,10 @@ class TestFileContentProcedures(unittest.TestCase):
     '''
 
     def test_get_file_contents(self):
-        path = ""
+        from fsentity import FileSystemFile
+        from fsprocedures import FileSystemProcedures
         f = FileSystemFile(path)
         f.get_contents()
-        pass
 
 
     '''
@@ -30,11 +30,11 @@ class TestFileContentProcedures(unittest.TestCase):
     '''
 
     def test_set_file_contents(self):
-        path = ""
+        from fsentity import FileSystemFile
+        from fsprocedures import FileSystemProcedures
         e = FileSystemEntity(path)
         f = e.getFile()
         f.set_contents("abc")
-        pass
 
     '''
         The system will need to update a file's contents from a differential format.
@@ -43,32 +43,37 @@ class TestFileContentProcedures(unittest.TestCase):
     '''
 
     def test_set_file_from_diff(self):
+        from fsentity import FileSystemFile
+        from fsprocedures import FileSystemProcedures
         path = ""
         e = FileSystemEntity(path)
         f = e.getFile()
         f.set_from_diff("abc")
-        pass
 
 
     ''' Identify byte encoding '''
 
     def test_identify_encoding(self):
+        from fsentity import FileSystemFile
+        from fsprocedures import FileSystemProcedures
         path = ""
         e = FileSystemEntity(path)
         f = e.getFile()
         f.identify_encoding()
-        pass
 
     ''' Identify EOL format '''
 
     def test_identify_line_ending(self):
+        from fsentity import FileSystemFile
+        from fsprocedures import FileSystemProcedures
+
         path = ""
         e = FileSystemEntity(path)
         f = e.getFile()
         f.identify_line_ending()
-        pass
 
     ''' ... code style? '''
 
     def test_identify_format(self):
-        pass
+        from fsentity import FileSystemFile
+        from fsprocedures import FileSystemProcedures

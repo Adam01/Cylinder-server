@@ -75,30 +75,41 @@ class TestFileSystemProcedures(unittest.TestCase):
     def tearDownClass(cls):
         shutil.rmtree(cls.test_dir)
 
+    def create_RPC(self, func_name, **kwargs):
+        return {"id": 0, "method": func_name, "params": dict(kwargs)}
+
     ''' FS.01
         The system is required to create a file at a specified location and optionally populate it with content.
         The test is successful given the file has been created and matches the expected contents.
     '''
 
     def test_FS01_create_file(self):
-        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+        from fsentity import FileSystemDirectory
+        from fsprocedures import FileSystemProcedures
 
         e = FileSystemDirectory(self.test_dir)
-        e.create_file("FileCreate")
+
+        # TODO: test f
+        f = e.create_file("FileCreate")
 
         self.assertTrue(os.path.isfile(self.file_create), "CreateFile was not created by FileSystemDirectory")
 
         os.remove(self.file_create)
 
         fsprocs = FileSystemProcedures()
-        fsprocs.create_file(self.file_create)
+        json_obj = self.create_RPC("create_file",
+                                   path=self.test_dir,
+                                   name=self.file_create)
+        fsprocs(json_obj)
 
         self.assertTrue(os.path.isfile(self.file_create), "CreateFile was not created by FileSystemProcedures")
 
     def test_FS01_create_file_contents(self):
-        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+        from fsentity import FileSystemDirectory
+        from fsprocedures import FileSystemProcedures
+
         e = FileSystemDirectory(self.test_dir)
-        e.create_file("FileCreate", self.file_create_contents)
+        f = e.create_file("FileCreate", self.file_create_contents)
 
         self.assertTrue(os.path.isfile(self.file_create), "CreateFile was not created by FileSystemDirectory")
 
@@ -109,7 +120,11 @@ class TestFileSystemProcedures(unittest.TestCase):
         os.remove(self.file_create)
 
         fsprocs = FileSystemProcedures()
-        fsprocs.create_file(self.file_create)
+        json_obj = self.create_RPC("create_file",
+                                   path=self.test_dir,
+                                   name=self.file_create,
+                                   contents=self.file_create_contents)
+        fsprocs(json_obj)
 
         self.assertTrue(os.path.isfile(self.file_create), "CreateFile was not created by FileSystemProcedures")
 
@@ -123,12 +138,24 @@ class TestFileSystemProcedures(unittest.TestCase):
     '''
 
     def test_FS02_create_directory(self):
-        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+        from fsentity import FileSystemDirectory
+        from fsprocedures import FileSystemProcedures
 
         e = FileSystemDirectory(self.test_dir)
-        e.create_directory(self.dir_create_name)
+        # TODO: test d
+        d = e.create_directory(self.dir_create_name)
 
         self.assertTrue(os.path.isdir(self.dir_create_path), "FileSystemDirectory didn't manage to create a directory")
+
+        os.rmdir(self.dir_create_path)
+
+        fsprocs = FileSystemProcedures()
+        json_obj = self.create_RPC("create_directory",
+                                   path=self.test_dir,
+                                   name=self.dir_create_name)
+        fsprocs(json_obj)
+
+        self.assertTrue(os.path.isdir(self.dir_create_path), "CreateDirectory was not created by FileSystemProcedures")
 
     ''' FS.03
         The system is required to move a file-system entity to another location in the file system.
@@ -138,7 +165,8 @@ class TestFileSystemProcedures(unittest.TestCase):
     '''
 
     def test_FS03_move_entity(self):
-        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+        from fsentity import FileSystemEntity, FileSystemDirectory
+        from fsprocedures import FileSystemProcedures
 
         e = FileSystemEntity(self.file_move_source_path)
         d = FileSystemDirectory(self.file_move_target_dir)
@@ -146,10 +174,24 @@ class TestFileSystemProcedures(unittest.TestCase):
         # Note: second parameter can be optional (current name is used)
         e.move_to(d, self.file_move_target_name)
 
+        # TODO: test e path
+
         self.assertTrue(os.path.isfile(self.file_move_target_path), "FileSystemEntity didn't move file - "
                                                                     "It does not exist in target directory")
         self.assertFalse(os.path.isfile(self.file_move_source_path), "FileSystemEntity didn't move file -"
                                                                      "it still exists in source directory")
+
+        fsprocs = FileSystemProcedures()
+        json_obj = self.create_RPC("move_entity",
+                                   source=self.file_move_target_path,
+                                   target=self.file_move_source_path)
+        fsprocs(json_obj)
+
+        self.assertTrue(os.path.isfile(self.file_move_source_path), "FileSystemProcedures didn't move file - "
+                                                                    "It does not exist in target directory")
+        self.assertFalse(os.path.isfile(self.file_move_target_path), "FileSystemProcedures didn't move file -"
+                                                                     "it still exists in source directory")
+
 
     ''' FS.04
         The system is required to delete a file from the file-system.
@@ -157,11 +199,24 @@ class TestFileSystemProcedures(unittest.TestCase):
     '''
 
     def test_FS04_remove_entity(self):
-        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+        from fsentity import FileSystemEntity
+        from fsprocedures import FileSystemProcedures
 
         e = FileSystemEntity(self.file_delete)
         e.remove()
+
+        # TODO: test e now fails
+
         self.assertFalse(os.path.isfile(self.file_delete), "FileSystemEntity didn't delete specified file")
+
+        with open(self.file_delete, "w") as f:
+            f.write("Abcdefg123")
+
+        fsprocs = FileSystemProcedures()
+        json_obj = self.create_RPC("remove_entity",
+                                   path=self.file_delete)
+        fsprocs(json_obj)
+        self.assertFalse(os.path.isfile(self.file_delete), "FileSystemProcedures didn't delete specified file")
 
     ''' FS.05
         The system is required to copy a file to a specified location within the user's file-system.
@@ -170,13 +225,16 @@ class TestFileSystemProcedures(unittest.TestCase):
     '''
 
     def test_FS05_copy_entity(self):
-        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+        from fsentity import FileSystemEntity, FileSystemDirectory
+        from fsprocedures import FileSystemProcedures
 
         e = FileSystemEntity(self.file_copy_source_path)
         d = FileSystemDirectory(self.file_copy_target_dir)
 
         # Note: second parameter can be optional (current name is used)
-        e.copy_to(d, self.file_copy_target_name)
+        new_entity = e.copy_to(d, self.file_copy_target_name)
+
+        # TODO: test new_entity, fsprocs
 
         self.assertTrue(os.path.isfile(self.file_copy_target_path), "FileSystemEntity didn't copy file - "
                                                                     "It does not exist in target directory")
@@ -190,11 +248,16 @@ class TestFileSystemProcedures(unittest.TestCase):
     '''
 
     def test_FS06_copy_directory(self):
-        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+        from fsentity import FileSystemDirectory
+        from fsprocedures import FileSystemProcedures
+
+        # TODO: fsprocs
 
         sd = FileSystemDirectory(self.dir_copy_source_path)
         td = FileSystemDirectory(self.dir_copy_target_dir)
-        sd.copy_to(td, self.dir_copy_target_name)
+        new_dir = sd.copy_to(td, self.dir_copy_target_name)
+
+        # TODO: test new_dir
 
         self.assertTrue(os.path.isdir(self.dir_copy_target_path),
                         "FileSystemDirectory didn't manage to copy a directory")
@@ -226,6 +289,7 @@ class TestFileSystemProcedures(unittest.TestCase):
 
     def test_FS07_list_directory(self):
         from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
+        from fsprocedures import FileSystemProcedures
 
         e = FileSystemDirectory(self.static_dir)
         l = e.list()
