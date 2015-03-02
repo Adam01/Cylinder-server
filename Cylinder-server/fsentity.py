@@ -7,6 +7,7 @@ import copy
 import sys
 import getpass
 from enum import Enum
+import shutil
 
 types = Enum('FSEntityType', 'file directory other')
 
@@ -14,11 +15,11 @@ types = Enum('FSEntityType', 'file directory other')
 class EntityMetadata:
     def __init__(self, path):
         self.path = path
-        stat_result = os.stat(self.path)
-        self.mode = stat_result.st_mode
-        self.created = stat_result.st_ctime
-        self.accessed = stat_result.st_atime
-        self.modified = stat_result.st_mtime
+        self.__stat = os.stat(self.path)
+        self.mode = self.__stat.st_mode
+        self.created = self.__stat.st_ctime
+        self.accessed = self.__stat.st_atime
+        self.modified = self.__stat.st_mtime
         self.owner = None
 
         if sys.platform.startswith("win"):
@@ -30,7 +31,16 @@ class EntityMetadata:
         elif sys.platform.startswith("linux"):
             import pwd
 
-            self.owner = pwd.getpwuid(stat_result.st_uid).pw_name
+            self.owner = pwd.getpwuid(self.__stat.st_uid).pw_name
+
+    def copy_to(self, target_entity):
+        shutil.copystat(self.path, target_entity.get_path())
+
+        if sys.platform.startswith("linux"):
+            os.chown(target_entity.get_path(), self.__stat.st_uid, self.__stat.st_gid)
+
+        target_entity.update_meta()
+
 
 
 def get_enum_type(mode):
@@ -108,7 +118,16 @@ class FileSystemEntity:
 
         target_path = target_dir.join_name(target_name)
         os.rename(self.get_path(), target_path)
-        self.meta = EntityMetadata(target_path)
+        self.__init__(target_path)
+
+    def copy_to(self, target_dir, target_name=None, recursive=True, on_enter_dir=None, on_copied_file=None):
+        instance = self.get_type_instance()
+        if isinstance(instance, FileSystemDirectory):
+            return instance.copy_to(target_dir, target_name, recursive=recursive, on_enter_dir=on_enter_dir,
+                                    on_copied_file=on_copied_file)
+        elif isinstance(instance, FileSystemFile):
+            return instance.copy_to(target_dir, target_name)
+        return None
 
     def remove(self):
         os.remove(self.get_path())
@@ -157,6 +176,46 @@ class FileSystemDirectory(FileSystemEntity):
         os.mkdir(dir_path)
         return FileSystemDirectory(dir_path)
 
+    def list(self):
+        return os.listdir(self.get_path())
+
+    def copy_to(self, target_dir, target_name=None, recursive=True, on_enter_dir=None, on_copied_file=None):
+        if not isinstance(target_dir, FileSystemDirectory):
+            target_dir = FileSystemDirectory(target_dir)
+        if target_name is None:
+            target_name = self.get_base_name()
+        if target_dir.exists(target_name):
+            # TODO: raise entity exists error
+            pass
+
+        contents = self.list()
+
+        # target path  = target dir/this name/
+        target_path = target_dir.join_name(target_name)
+        os.mkdir(target_path)
+
+        # where all the child entities go into (target dir/this name)
+        target_path_dir = FileSystemDirectory(target_path)
+
+        if on_enter_dir:
+            on_enter_dir(original_dir=self, target_dir=target_dir, target_path_dir=target_path_dir,
+                         target_name=target_name)
+
+        i = 0
+        for name in contents:
+            i += i
+            to_copy = FileSystemEntity(self.join_name(name))
+            if to_copy.is_file():
+                copied = to_copy.copy_to(target_dir=target_path_dir, target_name=None)
+                if on_copied_file:
+                    on_copied_file(original_dir=self, target_dir=target_dir, target_path_dir=target_path_dir,
+                                   original=to_copy, copied=copied)
+            elif to_copy.is_directory():
+                copied = to_copy.copy_to(target_dir=target_path_dir, recursive=recursive, on_enter_dir=on_enter_dir,
+                                         on_copied_file=on_copied_file)
+
+        return target_path_dir
+
 
 class FileSystemFile(FileSystemEntity):
     def __init__(self, path_base):
@@ -175,3 +234,20 @@ class FileSystemFile(FileSystemEntity):
     def set_contents(self, data):
         with open(self.get_path(), "w") as f:
             f.write(data)
+
+    def copy_to(self, target_dir, target_name=None):
+        if not isinstance(target_dir, FileSystemDirectory):
+            target_dir = FileSystemDirectory(target_dir)
+        if target_name is None:
+            target_name = self.get_base_name()
+        if target_dir.exists(target_name):
+            # TODO: raise entity exists error
+            pass
+
+        target_path = target_dir.join_name(target_name)
+        shutil.copy2(self.get_path(), target_path)
+
+        target_entity = FileSystemEntity(target_path)
+        self.meta.copy_to(target_entity)
+
+        return target_entity

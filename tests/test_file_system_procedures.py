@@ -26,7 +26,7 @@ class TestFileSystemProcedures(unittest.TestCase):
         with open(cls.static_dir + "/B", "w") as f:
             f.write("123Abc")
 
-        cls.expected_static_list = ["D1/", "D2/", "A", "B"]
+        cls.expected_static_list = ["A", "B", "D1", "D2"]
 
         # Move file vars
         cls.file_move_source_path = os.path.join(cls.test_dir, "FileMove")
@@ -47,8 +47,8 @@ class TestFileSystemProcedures(unittest.TestCase):
         # Copy dir vars
         cls.dir_copy_source_path = cls.static_dir
         cls.dir_copy_target_name = "DirCopied"
-        cls.dir_copy_target_dir = cls.static_dir
-        cls.dir_copy_target_path = cls.dir_copy_target_dir + cls.dir_copy_target_name
+        cls.dir_copy_target_dir = cls.test_dir
+        cls.dir_copy_target_path = os.path.join(cls.dir_copy_target_dir, cls.dir_copy_target_name)
         cls.dir_copy_target_dirs = ["D1", "D2"]
         cls.dir_copy_target_files = ["A", "B"]
 
@@ -253,9 +253,18 @@ class TestFileSystemProcedures(unittest.TestCase):
 
         # TODO: fsprocs
 
+        def onFileCopy(original_dir, target_dir, target_path_dir, original=None, copied=None, target_name=None):
+            if original is not None:
+                print "Copied file from %s\nto %s" % (original.get_path(), copied.get_path())
+            if target_name is not None:
+                print "Entered directory %s\nCopying to %s" % (original_dir.get_path(), target_path_dir.get_path())
+
+        # def onFileCopy(**kwargs):
+        #    print dict(kwargs)
+
         sd = FileSystemDirectory(self.dir_copy_source_path)
         td = FileSystemDirectory(self.dir_copy_target_dir)
-        new_dir = sd.copy_to(td, self.dir_copy_target_name)
+        new_dir = sd.copy_to(td, self.dir_copy_target_name, on_copied_file=onFileCopy, on_enter_dir=onFileCopy)
 
         # TODO: test new_dir
 

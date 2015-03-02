@@ -18,7 +18,6 @@ class JSONCallable:
             params = req["params"]
 
             assert isinstance(method, types.StringTypes), "Invalid method type: %s" % type(method)
-            print "Looking for jsonrpc_%s" % method
             function = getattr(self, "jsonrpc_%s" % method, None)
 
             if callable(function):
