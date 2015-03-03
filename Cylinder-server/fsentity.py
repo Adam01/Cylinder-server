@@ -8,6 +8,7 @@ import sys
 import getpass
 from enum import Enum
 import shutil
+from chardet.universaldetector import UniversalDetector
 
 types = Enum('FSEntityType', 'file directory other')
 
@@ -159,14 +160,20 @@ class FileSystemDirectory(FileSystemEntity):
 
     def create_file(self, name, contents=None):
         file_path = os.path.join(self.get_path(), name)
+
         if os.path.exists(file_path):
             # TODO: throw error
             pass
-        with open(file_path, 'w') as fh:
-            if contents is not None:
-                fh.write(contents)
+
+        with open(file_path, 'w'):
             pass
-        return FileSystemFile(file_path)
+
+        created_file = FileSystemFile(file_path)
+
+        if contents is not None:
+            created_file.set_contents(contents)
+
+        return created_file
 
     def create_directory(self, name):
         dir_path = os.path.join(self.get_path(), name)
@@ -251,3 +258,61 @@ class FileSystemFile(FileSystemEntity):
         self.meta.copy_to(target_entity)
 
         return target_entity
+
+    def get_encoding(self):
+        detector = UniversalDetector()
+        for line in file(self.get_path(), 'rb'):
+            detector.feed(line)
+            if detector.done: break
+        detector.close()
+        return detector.result["encoding"].upper()
+
+
+    def get_line_ending(self):
+        import codecs
+
+        f = codecs.open(self.get_path(), 'rb', encoding=self.get_encoding())
+        s = f.read(1000)  # If a new line isn't in this, it's probably not a text file
+
+
+        # This counts the occurrences of LF, CR, and CRLF's in the sample string
+        results = dict()
+        results["LF"] = 0
+        results["CRLF"] = 0
+        results["CR"] = 0
+
+        start = 0
+
+        while True:
+            lf_loc = s.find('\n', start)
+            cr_loc = s.find('\r', start)
+
+            if cr_loc == lf_loc == -1:  # None found
+                break
+            elif lf_loc == -1:  # Only found CR
+                results["CR"] += 1
+                break
+            elif cr_loc == -1:  # Only found LF
+                results["LF"] += 1
+                break
+            elif cr_loc == lf_loc - 1:  # Found CRLF
+                results["CRLF"] += 1
+                start = lf_loc + 1
+            elif cr_loc > lf_loc:  # Found LF and then a CR, need to see if there's another LF after the CR
+                results["LF"] += 1
+                start = cr_loc
+            elif lf_loc > cr_loc:  # Found CR and then a LF, count both
+                results["CR"] += 1
+                results["LF"] += 1
+                start = lf_loc + 1
+
+        most_used, ignored = max(results.iteritems(), key=lambda x: x[1])
+
+        return most_used
+
+
+    def get_programming_language(self):
+        from pygments.lexers import guess_lexer, guess_lexer_for_filename
+
+        with open(self.get_path(), "r") as f:
+            return guess_lexer_for_filename(self.get_base_name(), f.read(2048)).name

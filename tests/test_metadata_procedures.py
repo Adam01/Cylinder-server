@@ -57,7 +57,7 @@ class TestMetaDataProcedures(unittest.TestCase):
         self.assertEquals(e.get_size(), self.file_size, "Expected file size not returned")
         self.assertEquals(e.get_type_instance().get_size(), self.file_size, "Expected file size not returned")
 
-        e.get_directory().get_size()  # count size of contents, recursively
-        e.get_directory().get_content_count()  # get number of child items
+        e.get_type_instance().get_size()  # count size of contents, recursively
+        e.get_type_instance().get_content_count()  # get number of child items
 
         pass
