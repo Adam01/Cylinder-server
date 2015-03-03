@@ -3,6 +3,8 @@ language: python
 python:
     -   "2.7"
 
+cache: pip
+
 before_install:
     -   pip install -U setuptools
 
@@ -11,6 +13,10 @@ install:
 
 before_script:
     - export PYTHONPATH=$PYTHONPATH:$PWD/Cylinder-server/
+    - sudo useradd test
+    - sudo echo test | passwd test --stdin
+    - sudo useradd sudouser sudo
+    - sudo echo sudopassword | passwd sudouser --stdin
 
 script: 
 # TDD
