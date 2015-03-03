@@ -17,15 +17,13 @@ before_install:
     -   pip install -U setuptools
 
 install:
+    -   sudo useradd --help
+    -   sudo useradd test -M -p $(echo "test" | openssl passwd -1 -stdin)
+    -   sudo useradd sudouser -M -G sudo -p $(echo "sudouser" | openssl passwd -1 -stdin)
     -   pip install -U -r ./requirements_linux.txt
 
 before_script:
     - export PYTHONPATH=$PYTHONPATH:$PWD/Cylinder-server/
-    - sudo useradd --help
-    - sudo useradd test
-    #- sudo echo "test:test" | chpasswd
-    - sudo useradd sudouser sudo
-    #- sudo echo "sudouser:sudouser" | chpasswd
 
 script:
     - nosetests -v $TEST_DIR
