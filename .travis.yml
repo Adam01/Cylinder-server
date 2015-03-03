@@ -21,10 +21,11 @@ install:
 
 before_script:
     - export PYTHONPATH=$PYTHONPATH:$PWD/Cylinder-server/
+    - sudo useradd --help
     - sudo useradd test
-    - sudo echo "test:test" | chpasswd
+    #- sudo echo "test:test" | chpasswd
     - sudo useradd sudouser sudo
-    - sudo echo "sudouser:sudouser" | chpasswd
+    #- sudo echo "sudouser:sudouser" | chpasswd
 
 script:
     - nosetests -v $TEST_DIR
