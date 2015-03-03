@@ -1,9 +1,17 @@
+os:
+    -   linux
+    -   osx
+
 language: python
 
 python:
     -   "2.7"
 
 cache: pip
+
+env:
+    -   TEST_DIR=./tests
+    -   TEST_DIR=./tests/unit
 
 before_install:
     -   pip install -U setuptools
@@ -14,12 +22,9 @@ install:
 before_script:
     - export PYTHONPATH=$PYTHONPATH:$PWD/Cylinder-server/
     - sudo useradd test
-    - sudo echo test | passwd test --stdin
+    - sudo echo "test:test" | chpasswd
     - sudo useradd sudouser sudo
-    - sudo echo sudopassword | passwd sudouser --stdin
+    - sudo echo "sudouser:sudouser" | chpasswd
 
-script: 
-# TDD
-    - nosetests -v ./tests
-# Unit tests
-    - nosetests -v ./tests/unit
+script:
+    - nosetests -v $TEST_DIR
