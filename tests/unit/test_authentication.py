@@ -7,6 +7,7 @@ from authentication import Authentication, LoginError
 
 
 # @unittest.skipIf(os.environ.get('CI') is not None, "Cannot test user authentication on Travis CI")
+
 class TestAuthenticationClass(unittest.TestCase):
     CORRECT_USERNAME = "test"
     CORRECT_PASSWORD = "test"
