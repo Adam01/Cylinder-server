@@ -1,9 +1,13 @@
+import difflib
+import shutil
+
 __author__ = 'Adam'
 
 import unittest
 import sys
 import os
 import tempfile
+import useful
 
 
 class TestFileContentProcedures(unittest.TestCase):
@@ -28,10 +32,33 @@ class TestFileContentProcedures(unittest.TestCase):
         cls.set_contents = cls.text_file_contents
         cls.set_name = "TestSetContents.txt"
         cls.set_path = os.path.join(cls.test_dir, cls.set_name)
-        print "Test write file "
 
 
-    def tearDown(self):
+        # diff testing
+        cls.diff_target_path = os.path.join(cls.test_dir, "ScriptFile_Copy.py")
+        shutil.copyfile(cls.script_file_path, cls.diff_target_path)
+
+        cls.diff_new_path = os.path.join(cls.test_dir, "ScriptFile_Diff_Test.py")
+
+        import codecs
+
+        target_data = ""
+        with open(cls.diff_target_path, "rb") as f:
+            target_data = f.read().split("\n");
+
+        new_data = ""
+        with open(cls.diff_new_path, "rb") as f:
+            new_data = f.read().split("\n");
+
+        diff_data = difflib.ndiff(target_data, new_data)
+        diff_data = list(diff_data)
+        cls.comp_diff_data = useful.make_comp_diff(diff_data)
+
+
+    @classmethod
+    def tearDownClass(cls):
+        # os.remove(cls.set_path)
+        # os.remove(cls.diff_target_path)
         pass
 
     '''
@@ -78,11 +105,10 @@ class TestFileContentProcedures(unittest.TestCase):
     def test_set_file_from_diff(self):
         from fsentity import FileSystemFile
         from fsprocedures import FileSystemProcedures
-        path = ""
-        e = FileSystemEntity(path)
-        f = e.getFile()
-        f.set_from_diff("abc")
 
+        target_file = FileSystemFile(self.diff_target_path)
+        diff_crc = FileSystemFile(self.diff_new_path).get_crc32()
+        self.assertTrue(target_file.set_from_comp_diff(self.comp_diff_data, original_crc=diff_crc))
 
     ''' Identify byte encoding '''
 

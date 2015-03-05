@@ -127,19 +127,19 @@ elif sys.platform in ["linux2", "darwin"]:
                 pwd_entry = pwd.getpwnam(username)
                 if use_pam:
 
-                    import PAM
+                    import pam
 
                     def pam_conv(_auth, _query_list, _userData):
                         return [(password, 0)]
 
                     try:
-                        p = PAM.pam()
+                        p = pam.pam()
                         p.start("passwd")
                         p.set_item(PAM.PAM_USER, username)
                         p.set_item(PAM.PAM_CONV, pam_conv)
                         p.authenticate()
                         p.acct_mgmt()
-                    except PAM.error, p_error:
+                    except pam.error, p_error:
                         print "Auth:", p_error
                         raise LoginInvalid(username)
 
