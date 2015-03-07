@@ -1,7 +1,6 @@
 __author__ = 'Adam'
 
 import unittest
-import sys
 import os
 import tempfile
 import shutil
@@ -171,23 +170,25 @@ class TestFileSystemProcedures(unittest.TestCase):
         from fsentity import FileSystemEntity, FileSystemDirectory
         from fsprocedures import FileSystemProcedures
 
-        e = FileSystemEntity(self.file_move_source_path)
-        d = FileSystemDirectory(self.file_move_target_dir)
+        entity = FileSystemEntity(self.file_move_source_path)
+        target_directory = FileSystemDirectory(self.file_move_target_dir)
 
         # Note: second parameter can be optional (current name is used)
-        e.move_to(d, self.file_move_target_name)
-
-        # TODO: test e path
+        entity.move_to(target_directory, self.file_move_target_name)
 
         self.assertTrue(os.path.isfile(self.file_move_target_path), "FileSystemEntity didn't move file - "
                                                                     "It does not exist in target directory")
         self.assertFalse(os.path.isfile(self.file_move_source_path), "FileSystemEntity didn't move file -"
                                                                      "it still exists in source directory")
 
+        self.assertEqual(self.file_move_target_path, entity.get_path(),
+                         "FileSystemEntity didn't update its path after move")
+
         fsprocs = FileSystemProcedures()
         json_obj = self.create_RPC("move_entity",
                                    source=self.file_move_target_path,
                                    target=self.file_move_source_path)
+
         fsprocs(json_obj)
 
         self.assertTrue(os.path.isfile(self.file_move_source_path), "FileSystemProcedures didn't move file - "
@@ -229,7 +230,6 @@ class TestFileSystemProcedures(unittest.TestCase):
 
     def test_FS05_copy_entity(self):
         from fsentity import FileSystemFile, FileSystemDirectory
-        from fsprocedures import FileSystemProcedures
 
         e = FileSystemFile(self.file_copy_source_path)
         d = FileSystemDirectory(self.file_copy_target_dir)
@@ -252,7 +252,6 @@ class TestFileSystemProcedures(unittest.TestCase):
 
     def test_FS06_copy_directory(self):
         from fsentity import FileSystemDirectory
-        from fsprocedures import FileSystemProcedures
 
         # TODO: fsprocs
 
@@ -312,8 +311,7 @@ class TestFileSystemProcedures(unittest.TestCase):
     '''
 
     def test_FS07_list_directory(self):
-        from fsentity import FileSystemEntity, FileSystemDirectory, FileSystemFile
-        from fsprocedures import FileSystemProcedures
+        from fsentity import FileSystemDirectory
 
         e = FileSystemDirectory(self.static_dir)
         l = e.list()

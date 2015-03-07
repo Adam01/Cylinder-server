@@ -38,7 +38,7 @@ class C01TestSSLConnectivity(unittest.TestCase):
 
 
 # @unittest.skipIf(os.environ.get('CI') is not None, "C.02 TestUserAuthentication: Cannot test user authentication on "
-# "Travis CI")
+#"Travis CI")
 class C02TestUserAuthentication(unittest.TestCase):
     CORRECT_USERNAME = "test"
     CORRECT_PASSWORD = "test"

@@ -9,3 +9,7 @@ def refactored_function(output_text):
 """Hello world"""
 
 refactored_function(sys.platform)
+
+
+# One last comment
+

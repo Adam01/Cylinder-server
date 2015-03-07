@@ -1,7 +1,6 @@
 __author__ = 'Adam'
 
 import unittest
-import sys
 import os
 import getpass
 import tempfile
@@ -24,13 +23,13 @@ class TestMetaDataProcedures(unittest.TestCase):
         os.remove(cls.file_path)
 
     def test_get_entity_owner(self):
-        from fsentity import EntityMetadata
+        from fsentity.fsentity import EntityMetadata
 
         e = EntityMetadata(self.file_path)
         self.assertEquals(e.owner, self.user, "Owner of file does not match current user")
 
     def test_get_entity_permissions(self):
-        from fsentity import EntityMetadata
+        from fsentity.fsentity import EntityMetadata
 
         e = EntityMetadata(self.file_path)
         e.get_access_matrix()
@@ -43,7 +42,7 @@ class TestMetaDataProcedures(unittest.TestCase):
         pass
 
     def test_get_entity_timestamps(self):
-        from fsentity import EntityMetadata
+        from fsentity.fsentity import EntityMetadata
 
         e = EntityMetadata(self.file_path)
         print e.accessed
@@ -51,7 +50,7 @@ class TestMetaDataProcedures(unittest.TestCase):
         print e.modified
 
     def test_get_entity_sizes(self):
-        from fsentity import EntityMetadata, FileSystemEntity
+        from fsentity.fsentity import FileSystemEntity
 
         e = FileSystemEntity(self.file_path)
         self.assertEquals(e.get_size(), self.file_size, "Expected file size not returned")

@@ -3,7 +3,7 @@ __author__ = 'Adam'
 import unittest
 import os
 import sys
-from authentication import Authentication, LoginError
+from authentication import Authentication, LoginError, LoginInvalid
 
 
 # @unittest.skipIf(os.environ.get('CI') is not None, "Cannot test user authentication on Travis CI")
@@ -27,7 +27,7 @@ class TestAuthenticationClass(unittest.TestCase):
         self.assertRaises(TypeError, Authentication, self.CORRECT_USERNAME)
 
         # Correct usage, invalid credentials
-        self.assertRaises(LoginError, Authentication, self.INCORRECT_USERNAME, self.INCORRECT_PASSWORD)
+        self.assertRaises(LoginInvalid, Authentication, self.INCORRECT_USERNAME, self.INCORRECT_PASSWORD)
 
         # Correct usage
         auth = Authentication(self.CORRECT_USERNAME, self.CORRECT_PASSWORD)

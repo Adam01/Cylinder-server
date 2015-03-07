@@ -1,3 +1,5 @@
+import os
+
 __author__ = 'Adam'
 
 import sys
@@ -22,6 +24,7 @@ import sys
 
         Authentication attributes:
             username
+            home_dir
             [win32_token]
 
     Arguments:
@@ -43,8 +46,6 @@ import sys
     Throws:
 
         LoginError              -   Base of all exceptions
-
-        Linux (for now):
         LoginNoPasswordError    -   No password has been set for the user
         LoginLockedError        -   User account has been locked
         LoginNoUser             -   No such user
@@ -91,7 +92,7 @@ if sys.platform.startswith("win"):
     import win32security
 
     class Authentication:
-        def __init__(self, username, password, unused=None):
+        def __init__(self, username, password, use_pam=None):
 
             try:
                 self.win32_token = win32security.LogonUser(username, None, password,
@@ -99,13 +100,21 @@ if sys.platform.startswith("win"):
                                                            win32security.LOGON32_PROVIDER_DEFAULT,
                 )
             except win32security.error as e:
-
-                # TODO throw appropriate error
-
-                raise LoginError("Failed to log in as '%s': %s" % (username, e[2]))
+                raise {
+                    1317: LoginNoUser(username),
+                    1323: LoginInvalid(username),
+                    1326: LoginInvalid(username),
+                    1327: LoginLockedError(username),
+                    1328: LoginLockedError(username),
+                    1330: LoginExpiredError(username),
+                    1331: LoginLockedError(username),
+                }.get(
+                    e[0],
+                    LoginError("Failed to log in as '%s': %i %s" % (username, e[0], e[2]))
+                )
 
             self.username = username
-            self.home_dir = ""
+            self.home_dir = os.path.expanduser("~")
             self.validated = True
 
 elif sys.platform in ["linux2", "darwin"]:
@@ -127,19 +136,19 @@ elif sys.platform in ["linux2", "darwin"]:
                 pwd_entry = pwd.getpwnam(username)
                 if use_pam:
 
-                    import pam
+                    import PAM
 
                     def pam_conv(_auth, _query_list, _userData):
                         return [(password, 0)]
 
                     try:
-                        p = pam.pam()
+                        p = PAM.pam()
                         p.start("passwd")
                         p.set_item(PAM.PAM_USER, username)
                         p.set_item(PAM.PAM_CONV, pam_conv)
                         p.authenticate()
                         p.acct_mgmt()
-                    except pam.error, p_error:
+                    except PAM.error, p_error:
                         print "Auth:", p_error
                         raise LoginInvalid(username)
 
@@ -165,7 +174,6 @@ elif sys.platform in ["linux2", "darwin"]:
 
                 self.home_dir = pwd_entry[5]
             except KeyError, e:
-                print "Auth:", str(e)
                 raise LoginNoUser(username)
 
             self.username = username
