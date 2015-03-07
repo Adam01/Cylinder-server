@@ -101,8 +101,7 @@ if sys.platform.startswith("win"):
                 )
             except win32security.error as e:
                 raise {
-                    1317: LoginNoUser(username),
-                    1323: LoginInvalid(username),
+                    # 1317: LoginNoUser(username),
                     1326: LoginInvalid(username),
                     1327: LoginLockedError(username),
                     1328: LoginLockedError(username),
@@ -174,7 +173,8 @@ elif sys.platform in ["linux2", "darwin"]:
 
                 self.home_dir = pwd_entry[5]
             except KeyError, e:
-                raise LoginNoUser(username)
+                # raise LoginNoUser(username)
+                raise LoginInvalid(username)
 
             self.username = username
             self.validated = True

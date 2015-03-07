@@ -3,7 +3,7 @@ __author__ = 'Adam'
 import unittest
 import os
 import sys
-from authentication import Authentication, LoginError, LoginInvalid
+from authentication import Authentication, LoginError, LoginInvalid, LoginNoUser
 
 
 # @unittest.skipIf(os.environ.get('CI') is not None, "Cannot test user authentication on Travis CI")
