@@ -239,9 +239,11 @@ class TestFileSystemProcedures(unittest.TestCase):
 
         # TODO: test new_entity, fsprocs
 
+
         self.assertTrue(os.path.isfile(self.file_copy_target_path), "FileSystemEntity didn't copy file - "
                                                                     "It does not exist in target directory")
         self.assertTrue(os.path.isfile(self.file_copy_source_path), "FileSystemEntity deleted original file on copy")
+
         pass
 
     ''' FS.06

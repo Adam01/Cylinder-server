@@ -1,5 +1,6 @@
 __author__ = 'Adam'
-
+import sys
+import os
 
 def copy_some(obj_from, obj_to, names):
     for n in names:
@@ -21,3 +22,22 @@ def make_comp_diff(delta_list):
             comp_delta[i].append(v)
     return comp_delta
 
+
+def get_exec_path():
+    if sys.platform.startswith("win"):
+        exeName = "Python.exe"
+        import win32api
+        # This usually points to PythonService.exe
+        # Go hunting like winserviceutil does for that executable
+
+        for path in [sys.prefix] + sys.path:
+            look = os.path.join(path, exeName)
+            if os.path.isfile(look):
+                return win32api.GetFullPathName(look)
+        # Try the global Path.
+        try:
+            return win32api.SearchPath(None, exeName)[0]
+        except win32api.error:
+            raise RuntimeError("Unable to locate python.exe")
+    else:
+        return sys.executable

@@ -37,6 +37,8 @@ import subprocess
         popen_obj = create_process_as(auth, "whoami")
         popen_obj.wait()
         # etc...
+
+    Note: I can't seem to get popen's env argument working with this
 '''
 
 if sys.platform.startswith("win"):

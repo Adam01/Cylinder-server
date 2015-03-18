@@ -14,3 +14,4 @@ enum34==1.0.4
 chardet==2.3.0
 pygments==2.0.2
 pypiwin32==219
+sockjs-cyclone==1.0.2

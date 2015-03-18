@@ -111,6 +111,14 @@ class FileSystemEntity:
     def get_size(self):
         return os.path.getsize(self.meta.path)
 
+    def is_under(self, target_dir):
+        if not isinstance(target_dir, FileSystemDirectory):
+            target_dir = FileSystemDirectory(target_dir)
+        return self.get_path().startswith(target_dir.get_path())
+
+    def parent_of(self, path):
+        return path.startswith(self.get_path())
+
 
     def move_to(self, target_dir, target_name=None):
         if not isinstance(target_dir, FileSystemDirectory):

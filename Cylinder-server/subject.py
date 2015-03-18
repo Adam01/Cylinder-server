@@ -12,7 +12,7 @@ class _weak_callable:
 
     def __call__(self, *args, **kws):
         if self._obj is not None:
-            return self._meth(self._obj * args, **kws)
+            return self._meth(self._obj, *args, **kws)
         else:
             return self._meth(*args, **kws)
 
@@ -105,7 +105,9 @@ class EventRetainer(EventSubject):
             self.retained.pop(name, None)
 
     def notify(self, name, *args):
-        if EventSubject.notify(self, name, *args) == 0:
+        n_called = EventSubject.notify(self, name, *args)
+        if n_called == 0:
             if name not in self.retained:
                 self.retained[name] = []
             self.retained[name].append(args)
+        return n_called

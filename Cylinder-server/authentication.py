@@ -90,6 +90,7 @@ class LoginInvalid(LoginError):
 
 if sys.platform.startswith("win"):
     import win32security
+    import win32profile
 
     class Authentication:
         def __init__(self, username, password, use_pam=None):
@@ -113,7 +114,7 @@ if sys.platform.startswith("win"):
                 )
 
             self.username = username
-            self.home_dir = os.path.expanduser("~")
+            self.home_dir = win32profile.GetUserProfileDirectory(self.win32_token)
             self.validated = True
 
 elif sys.platform in ["linux2", "darwin"]:

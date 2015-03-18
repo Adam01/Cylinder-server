@@ -10,10 +10,10 @@ from twisted.python import log
 
 
 class JSONCallable:
+    def __init__(self):
+        self.current_id = 0
     def __call__(self, req):
-        jsonid = None
         try:
-            jsonid = req["id"]
             method = req["method"]
             params = req["params"]
 
@@ -35,4 +35,8 @@ class JSONCallable:
             log.msg("Bad Request: %s" % str(e))
             error = {'code': 0, 'message': str(e)}
             result = None
-        return {"result": result, "error": error, "id": jsonid}
+        data = {"result": result, "method": method, "error": error, "id": self.current_id}
+        if "callback_id" in req:
+            data["callback_id"] = req["callback_id"]
+        self.current_id += 1
+        return data

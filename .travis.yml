@@ -27,5 +27,5 @@ before_script:
     - export PYTHONPATH=$PYTHONPATH:$PWD/Cylinder-server/
 
 script:
-    - sudo -u sudouser -nEs env PATH=$PATH nosetests -v $TEST_DIR
+    - sudo -u sudouser -ns PATH=$PATH & nosetests -v $TEST_DIR
 
