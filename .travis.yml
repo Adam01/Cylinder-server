@@ -25,7 +25,7 @@ install:
     -   sudo useradd sudouser -M -G sudo -p $(echo "sudouser" | openssl passwd -1 -stdin) -d /home/sudouser
     -   sudo usermod -a -G shadow sudouser
     -   sudo usermod -a -G $USER sudouser
-    -   sudo cp -r ./tests /home/sudouser/
+    -   sudo cp -r ./tests /home/sudouser/tests
     -   sudo apt-get install python-pam
     -   pip install -U -r ./requirements_linux.txt --download-cache $HOME/.pip-cache/
 
