@@ -15,6 +15,9 @@ class TestFileSystemProcedures(unittest.TestCase):
         cls.username = getpass.getuser()
         cls.userdir = os.path.expanduser("~")
 
+        tempfile.tempdir = os.path.join(cls.userdir, "tmp")
+        os.mkdir(tempfile.tempdir)
+
 
         cls.test_dir = tempfile.mkdtemp()
         print "Test directory created at: " + cls.test_dir

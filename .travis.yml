@@ -36,4 +36,4 @@ before_script:
     - export PYTHONPATH=$PYTHONPATH:$PWD/Cylinder-server/
 
 script:
-    - sudo -u sudouser -ns PATH="$PATH" PYTHONPATH="$PYTHONPATH" nosetests -v $TEST_DIR
+    - sudo -Hu sudouser -ns PATH="$PATH" PYTHONPATH="$PYTHONPATH" nosetests -v $TEST_DIR
