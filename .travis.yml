@@ -20,6 +20,7 @@ install:
     -   sudo useradd test -M -p $(echo "test" | openssl passwd -1 -stdin)
     -   sudo useradd sudouser -M -G sudo -p $(echo "sudouser" | openssl passwd -1 -stdin)
     -   sudo usermod -a -G shadow sudouser
+    -   sudo usermod -a -G $USER sudouser
     -   sudo apt-get install python-pam
     -   pip install -U -r ./requirements_linux.txt
 
@@ -27,5 +28,5 @@ before_script:
     - export PYTHONPATH=$PYTHONPATH:$PWD/Cylinder-server/
 
 script:
-    - sudo -u sudouser -ns PATH=$PATH PYTHONPATH=$PYTHONPATH & nosetests -v $TEST_DIR
+    - sudo -u sudouser -ns PATH="$PATH" PYTHONPATH="$PYTHONPATH" nosetests -v $TEST_DIR
 
