@@ -117,8 +117,10 @@ class FileSystemEntity:
         return self.get_path().startswith(target_dir.get_path())
 
     def parent_of(self, path):
-        return path.startswith(self.get_path())
+        return os.path.normcase(path).startswith(os.path.normcase(self.get_path()))
 
+    def equals(self, path):
+        return os.path.normcase(os.path.abspath(path)) == os.path.normcase(self.get_path())
 
     def move_to(self, target_dir, target_name=None):
         if not isinstance(target_dir, FileSystemDirectory):

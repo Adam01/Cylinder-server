@@ -21,8 +21,10 @@ class FileSystemProcedures(JSONCallable):
         path = os.path.expanduser(path)
         path = os.path.abspath(path)
 
+
         if not self.user_dir.parent_of(path):
-            log.err("%s not in %s" % (path, self.user_dir.get_path()))
+            # log.err("%s not in %s" % (path, self.user_dir.get_path()))
+            print "%s not in %s" % (path, self.user_dir.get_path())
             raise UserAreaError()
 
         return path

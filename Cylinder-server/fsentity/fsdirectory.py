@@ -12,6 +12,9 @@ class FileSystemDirectory(FileSystemEntity):
             self.__dict__.update(copy.deepcopy(path_base.__dict__))
         else:
             FileSystemEntity.__init__(self, path_base)
+        if self.type != types.directory:
+            # TODO raise
+            pass
 
     def get_type(self):
         return types.directory

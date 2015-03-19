@@ -7,22 +7,27 @@ language: python
 python:
     -   "2.7"
 
-cache: pip
+cache:
+    pip: true
+    directories:
+        - /home/travis/virtualenv/python2.7/lib/python2.7/site-packages
+        - $HOME/.pip-cache/
 
 env:
-    -   TEST_DIR=./tests
-    -   TEST_DIR=./tests/unit
+    -   TEST_DIR=/home/sudouser/tests
+    -   TEST_DIR=/home/sudouser/tests/unit
 
 before_install:
-    -   pip install -U setuptools
+    -   pip install -U setuptools --download-cache $HOME/.pip-cache/
 
 install:
     -   sudo useradd test -M -p $(echo "test" | openssl passwd -1 -stdin)
-    -   sudo useradd sudouser -M -G sudo -p $(echo "sudouser" | openssl passwd -1 -stdin)
+    -   sudo useradd sudouser -M -G sudo -p $(echo "sudouser" | openssl passwd -1 -stdin) -d /home/sudouser
     -   sudo usermod -a -G shadow sudouser
     -   sudo usermod -a -G $USER sudouser
+    -   sudo cp ./tests /home/sudouser/
     -   sudo apt-get install python-pam
-    -   pip install -U -r ./requirements_linux.txt
+    -   pip install -U -r ./requirements_linux.txt --download-cache $HOME/.pip-cache/
 
 before_script:
     - export PYTHONPATH=$PYTHONPATH:$PWD/Cylinder-server/

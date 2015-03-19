@@ -82,7 +82,7 @@ class C02TestUserAuthentication(unittest.TestCase):
 '''
 
 
-@unittest.skipIf(sys.platform.startswith("win") or os.environ.get('CI') is not None,
+@unittest.skipIf(sys.platform.startswith("win") or os.environ.get('CI') is None,
                  "C.03 TestSpawnUserProcess: Requires to be run as a service "
                  "(or with abilities to impersonate, see CreateProcessAsUser)")
 class C03TestSpawnUserProcess(unittest.TestCase):
@@ -106,8 +106,11 @@ class C03TestSpawnUserProcess(unittest.TestCase):
         if sys.platform.startswith("win"):
             # Remove domain\\
             out = out[out.find("\\") + 1:]
-        # Remove trailing \r\n
-        out = out[:-2]
+            # Remove trailing \r\n
+            out = out[:-2]
+        else:
+            print out
+            out = out[:-2]
 
         self.assertEquals(out, C02TestUserAuthentication.CORRECT_USERNAME)
 

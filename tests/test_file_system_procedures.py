@@ -9,6 +9,13 @@ import shutil
 class TestFileSystemProcedures(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        import getpass
+        import os
+
+        cls.username = getpass.getuser()
+        cls.userdir = os.path.expanduser("~")
+
+
         cls.test_dir = tempfile.mkdtemp()
         print "Test directory created at: " + cls.test_dir
 
@@ -98,7 +105,7 @@ class TestFileSystemProcedures(unittest.TestCase):
 
         os.remove(self.file_create)
 
-        fsprocs = FileSystemProcedures()
+        fsprocs = FileSystemProcedures(self.username, self.userdir)
         json_obj = self.create_RPC("create_file",
                                    path=self.test_dir,
                                    name=self.file_create)
@@ -121,7 +128,7 @@ class TestFileSystemProcedures(unittest.TestCase):
 
         os.remove(self.file_create)
 
-        fsprocs = FileSystemProcedures()
+        fsprocs = FileSystemProcedures(self.username, self.userdir)
         json_obj = self.create_RPC("create_file",
                                    path=self.test_dir,
                                    name=self.file_create,
@@ -151,7 +158,7 @@ class TestFileSystemProcedures(unittest.TestCase):
 
         os.rmdir(self.dir_create_path)
 
-        fsprocs = FileSystemProcedures()
+        fsprocs = FileSystemProcedures(self.username, self.userdir)
         json_obj = self.create_RPC("create_directory",
                                    path=self.test_dir,
                                    name=self.dir_create_name)
@@ -184,7 +191,7 @@ class TestFileSystemProcedures(unittest.TestCase):
         self.assertEqual(self.file_move_target_path, entity.get_path(),
                          "FileSystemEntity didn't update its path after move")
 
-        fsprocs = FileSystemProcedures()
+        fsprocs = FileSystemProcedures(self.username, self.userdir)
         json_obj = self.create_RPC("move_entity",
                                    source=self.file_move_target_path,
                                    target=self.file_move_source_path)
@@ -216,7 +223,7 @@ class TestFileSystemProcedures(unittest.TestCase):
         with open(self.file_delete, "w") as f:
             f.write("Abcdefg123")
 
-        fsprocs = FileSystemProcedures()
+        fsprocs = FileSystemProcedures(self.username, self.userdir)
         json_obj = self.create_RPC("remove_entity",
                                    path=self.file_delete)
         fsprocs(json_obj)
