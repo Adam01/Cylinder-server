@@ -22,14 +22,17 @@ class SlaveClient(basic.LineReceiver):
         self.sendLine(json.dumps(msg))
         log.msg("Sent user identification")
         self.json_command_handler = FileSystemProcedures(self.factory.username, self.factory.user_dir)
+        self.json_command_handler.subscribe("Tasks", self.sendObject)
 
     def dataReceived(self, sdata):
         data = json.loads(sdata)
         # handle cmd
         log.msg("Handling: %s" % sdata)
         # Once we've exhausted the prior options (server->slave commands)
-        return_data = self.json_command_handler(data)
-        return_str = json.dumps(return_data)
+        self.sendObject(self.json_command_handler(data))
+
+    def sendObject(self, obj):
+        return_str = json.dumps(obj)
         log.msg("Responding: %s" % return_str)
         self.sendLine(return_str)
 

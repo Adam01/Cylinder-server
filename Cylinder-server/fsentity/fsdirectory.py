@@ -6,15 +6,25 @@ import fsentity
 from fsentity import FileSystemEntity, types
 
 
+class NotADirectory(Exception):
+    def __init__(self, path):
+        self.path = path
+
+    def __str__(self):
+        return "Path is not a directory: '%s'" % self.path
+
 class FileSystemDirectory(FileSystemEntity):
     def __init__(self, path_base):
         if isinstance(path_base, FileSystemEntity):
+            if path_base.get_type() != types.directory:
+                raise NotADirectory(path_base.get_path())
             self.__dict__.update(copy.deepcopy(path_base.__dict__))
+
         else:
+            if not os.path.isdir(path_base):
+                raise NotADirectory(path_base)
+
             FileSystemEntity.__init__(self, path_base)
-        if self.type != types.directory:
-            # TODO raise
-            pass
 
     def get_type(self):
         return types.directory
@@ -26,6 +36,18 @@ class FileSystemDirectory(FileSystemEntity):
                 fp = os.path.join(dirpath, f)
                 total_size += os.path.getsize(fp)
         return total_size
+
+    def count_entities(self, recursive=False):
+        count = 0
+        for dirpath, dirnames, filenames in os.walk(self.get_path()):
+            count += len(dirnames) + len(filenames)
+        return count
+
+    def count_files(self, recursive=False):
+        count = 0
+        for dirpath, dirnames, filenames in os.walk(self.get_path()):
+            count += len(filenames)
+        return count
 
     def exists(self, name):
         return os.path.exists(os.path.join(self.get_path(), name))
@@ -61,8 +83,15 @@ class FileSystemDirectory(FileSystemEntity):
         os.mkdir(dir_path)
         return FileSystemDirectory(dir_path)
 
-    def list(self):
+    def list_basic(self):
         return os.listdir(self.get_path())
+
+    def list_contents(self):
+        collection = list()
+        for title in self.list_basic():
+            collection.append(FileSystemEntity(self.join_name(title)).get_info())
+        return collection
+
 
     def copy_to(self, target_dir, target_name=None, recursive=True, on_enter_dir=None, on_copied_file=None):
         if not isinstance(target_dir, FileSystemDirectory):
@@ -73,7 +102,7 @@ class FileSystemDirectory(FileSystemEntity):
             # TODO: raise entity exists error
             pass
 
-        contents = self.list()
+        contents = self.list_basic()
 
         # target path  = target dir/this name/
         target_path = target_dir.join_name(target_name)
@@ -89,8 +118,10 @@ class FileSystemDirectory(FileSystemEntity):
         for name in contents:
             to_copy = FileSystemEntity(self.join_name(name)).get_type_instance()
             if to_copy is None:
+                if os.path.islink(self.join_name(name)):
+                    linkto = os.readlink(self.join_name(name))
+                    os.symlink(linkto, target_dir.join_name(name))
                 # TODO: warn of unknown entity
-                pass
             elif to_copy.is_file():
                 copied = to_copy.copy_to(target_dir=target_path_dir, target_name=None)
                 if on_copied_file:

@@ -158,3 +158,26 @@ class FileSystemEntity:
 
     def remove(self):
         os.remove(self.get_path())
+
+    def get_info(self):
+        info = dict()
+        info["title"] = self.get_base_name()
+        info["size"] = self.get_size()
+
+        ftype = self.get_type()
+        if ftype is types.directory:
+            info["type"] = "directory"
+        elif ftype is types.file:
+            info["type"] = "file"
+        else:
+            info["type"] = "unknown"
+
+        meta = self.get_meta()
+
+        info["created"] = meta.created
+        info["modified"] = meta.modified
+        info["accessed"] = meta.accessed
+        info["path"] = meta.path
+        info["owner"] = meta.owner
+
+        return info

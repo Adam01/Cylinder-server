@@ -31,6 +31,7 @@ install:
     -   sudo chown sudouser:sudouser -R /home/sudouser/
     -   sudo apt-get install python-pam
     -   pip install -U -r ./requirements_linux.txt --download-cache $HOME/.pip-cache/
+    -   sudo ls /home/sudouser/tests
 
 before_script:
     - export PYTHONPATH=$PYTHONPATH:$PWD/Cylinder-server/
