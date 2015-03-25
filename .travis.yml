@@ -27,7 +27,7 @@ install:
     -   sudo usermod -a -G $USER sudouser
     -   sudo mkdir /home/sudouser/
     -   sudo mkdir /home/sudouser/tests
-    -   sudo cp -r ./tests /home/sudouser/tests
+    -   sudo cp -r ./tests /home/sudouser/
     -   sudo chown sudouser:sudouser -R /home/sudouser/
     -   sudo apt-get install python-pam
     -   pip install -U -r ./requirements_linux.txt --download-cache $HOME/.pip-cache/
