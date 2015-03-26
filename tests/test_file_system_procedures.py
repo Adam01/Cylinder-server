@@ -11,15 +11,17 @@ class TestFileSystemProcedures(unittest.TestCase):
     def setUpClass(cls):
         import getpass
         import os
+        import random
+        import string
 
         cls.username = getpass.getuser()
         cls.userdir = os.path.expanduser("~")
 
-        tempfile.tempdir = os.path.join(cls.userdir, "tmp")
-        os.mkdir(tempfile.tempdir)
+        tmp_dir_name = "CylinderTest_" + ''.join(random.choice(string.ascii_letters) for _ in range(3))
 
+        cls.test_dir = os.path.join(cls.userdir, tmp_dir_name)
+        os.mkdir(cls.test_dir)
 
-        cls.test_dir = tempfile.mkdtemp()
         print "Test directory created at: " + cls.test_dir
 
         # Create a static dir (this won't change throughout the tests)

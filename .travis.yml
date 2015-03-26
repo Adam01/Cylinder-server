@@ -14,24 +14,33 @@ cache:
         - $HOME/.pip-cache/
 
 env:
+    -   TEST_USER=test
+    -   TEST_PASSWORD=test
+    -   TEST_USER_DIR=/home/test
+
+    -   SUDO_USER=sudouser
+    -   SUDO_PASSWORD=sudouser
+    -   SUDO_USER_DIR=/home/sudouser
+
     -   TEST_DIR=/home/sudouser/tests
     -   TEST_DIR=/home/sudouser/tests/unit
+    -   TEST_SRC_DIR=./tests
+    -   TEST_DEST_DIR=/home/sudouser/tests
 
 before_install:
     -   pip install -U setuptools --download-cache $HOME/.pip-cache/
 
 install:
-    -   sudo useradd test -M -p $(echo "test" | openssl passwd -1 -stdin)
-    -   sudo useradd sudouser -M -G sudo -p $(echo "sudouser" | openssl passwd -1 -stdin) -d /home/sudouser
-    -   sudo usermod -a -G shadow sudouser
-    -   sudo usermod -a -G $USER sudouser
-    -   sudo mkdir /home/sudouser/
-    -   sudo mkdir /home/sudouser/tests
-    -   sudo cp -r ./tests /home/sudouser/
-    -   sudo chown sudouser:sudouser -R /home/sudouser/
+    -   sudo useradd $TEST_USER -M -p $(echo $TEST_PASSWORD | openssl passwd -1 -stdin)
+    -   sudo useradd $SUDO_USER -M -G sudo -p $(echo $SUDO_PASSWORD | openssl passwd -1 -stdin) -d $SUDO_USER_DIR
+    -   sudo usermod -a -G shadow $SUDO_USER
+    -   sudo usermod -a -G $USER $SUDO_USER
+    -   sudo mkdir $SUDO_USER_DIR
+    -   sudo cp -r $TEST_SRC_DIR $SUDO_USER_DIR
+    -   sudo chown $SUDO_USER:$SUDO_USER -R $SUDO_USER_DIR
     -   sudo apt-get install python-pam
     -   pip install -U -r ./requirements_linux.txt --download-cache $HOME/.pip-cache/
-    -   sudo ls /home/sudouser/tests
+    -   sudo ls $TEST_DEST_DIR
 
 before_script:
     - export PYTHONPATH=$PYTHONPATH:$PWD/Cylinder-server/

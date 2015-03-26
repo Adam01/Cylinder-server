@@ -39,14 +39,16 @@ class C01TestSSLConnectivity(unittest.TestCase):
 
 # @unittest.skipIf(os.environ.get('CI') is not None, "C.02 TestUserAuthentication: Cannot test user authentication on "
 #"Travis CI")
+@unittest.skipIf(os.environ.get("TEST_USER") is None or
+                 os.environ.get("TEST_PASSWORD") is None,
+                 "TestUserAuthentication: No correct test user supplied")
 class C02TestUserAuthentication(unittest.TestCase):
-    CORRECT_USERNAME = "test"
-    CORRECT_PASSWORD = "test"
-    INCORRECT_USERNAME = "wrong"
-    INCORRECT_PASSWORD = "wrong"
-
-    def setUp(self):
-        pass
+    @classmethod
+    def setUpClass(cls):
+        cls.correct_username = os.environ.get("TEST_USER")
+        cls.correct_password = os.environ.get("TEST_PASSWORD")
+        cls.incorrect_username = "nonexistantuser"
+        cls.incorrect_password = "wrong"
 
     def tearDown(self):
         pass
@@ -56,23 +58,23 @@ class C02TestUserAuthentication(unittest.TestCase):
     def test_user_authentication(self):
         from authentication import Authentication, LoginError
 
-        auth = Authentication(self.CORRECT_USERNAME, self.CORRECT_PASSWORD, False)
+        auth = Authentication(self.correct_username, self.correct_password, False)
 
         self.assertIsInstance(auth, Authentication)
-        self.assertEquals(auth.username, self.CORRECT_USERNAME)
+        self.assertEquals(auth.username, self.correct_username)
 
-        self.assertRaises(LoginError, Authentication, self.INCORRECT_USERNAME, self.INCORRECT_PASSWORD)
+        self.assertRaises(LoginError, Authentication, self.incorrect_username, self.incorrect_password)
 
     @unittest.skipIf(sys.platform.startswith("win"), "C.02 test_user_authentication_pam: PAM not supported on windows")
     def test_user_authentication_pam(self):
         from authentication import Authentication, LoginError
 
-        auth = Authentication(self.CORRECT_USERNAME, self.CORRECT_PASSWORD, True)
+        auth = Authentication(self.correct_username, self.correct_password, True)
 
         self.assertIsInstance(auth, Authentication)
-        self.assertEquals(auth.username, self.CORRECT_USERNAME)
+        self.assertEquals(auth.username, self.correct_username)
 
-        self.assertRaises(LoginError, Authentication, self.INCORRECT_USERNAME, self.INCORRECT_PASSWORD, True)
+        self.assertRaises(LoginError, Authentication, self.incorrect_username, self.incorrect_password, True)
 
 
 '''
@@ -82,16 +84,20 @@ class C02TestUserAuthentication(unittest.TestCase):
 '''
 
 
-@unittest.skipIf(sys.platform.startswith("win") or os.environ.get('CI') is None,
-                 "C.03 TestSpawnUserProcess: Requires to be run as a service "
-                 "(or with abilities to impersonate, see CreateProcessAsUser)")
+@unittest.skipIf(os.environ.get("TEST_USER") is None or
+                 os.environ.get("TEST_PASSWORD") is None or
+                 sys.platform.startswith("win"),
+                 "TestSpawnUserProcess: No correct test user supplied || Needs windows service user")
 class C03TestSpawnUserProcess(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
+        cls.correct_username = os.environ.get("TEST_USER")
+        cls.correct_password = os.environ.get("TEST_PASSWORD")
+
         from authentication import Authentication
 
-        self.auth = Authentication(C02TestUserAuthentication.CORRECT_USERNAME,
-                                   C02TestUserAuthentication.CORRECT_PASSWORD)
-        pass
+        cls.auth = Authentication(cls.correct_username, cls.correct_password)
+
 
     def tearDown(self):
         pass
@@ -112,6 +118,6 @@ class C03TestSpawnUserProcess(unittest.TestCase):
             print out
             out = out[:-2]
 
-        self.assertEquals(out, C02TestUserAuthentication.CORRECT_USERNAME)
+        self.assertEquals(out, cls.correct_username)
 
         pass
