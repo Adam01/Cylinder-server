@@ -14,6 +14,7 @@ cache:
         - $HOME/.pip-cache/
 
 env:
+    global:
     -   TEST_USER=test
     -   TEST_PASSWORD=test
     -   TEST_USER_DIR=/home/test
@@ -22,10 +23,12 @@ env:
     -   SUDO_PASSWORD=sudouser
     -   SUDO_USER_DIR=/home/sudouser
 
-    -   TEST_DIR=/home/sudouser/tests
-    -   TEST_DIR=/home/sudouser/tests/unit
     -   TEST_SRC_DIR=./tests
     -   TEST_DEST_DIR=/home/sudouser/tests
+
+    matrix:
+    -   TEST_DIR=/home/sudouser/tests
+    -   TEST_DIR=/home/sudouser/tests/unit
 
 before_install:
     -   pip install -U setuptools --download-cache $HOME/.pip-cache/
