@@ -7,12 +7,16 @@ from authentication import Authentication, LoginError, LoginInvalid, LoginNoUser
 
 
 # @unittest.skipIf(os.environ.get('CI') is not None, "Cannot test user authentication on Travis CI")
-
+@unittest.skipIf(os.environ.get("TEST_USER") is None or
+                 os.environ.get("TEST_PASSWORD") is None,
+                 "TestUserAuthentication: No correct test user supplied")
 class TestAuthenticationClass(unittest.TestCase):
-    CORRECT_USERNAME = "test"
-    CORRECT_PASSWORD = "test"
-    INCORRECT_USERNAME = "wrong"
-    INCORRECT_PASSWORD = "wrong"
+    @classmethod
+    def setUpClass(cls):
+        cls.correct_username = os.environ.get("TEST_USER")
+        cls.correct_password = os.environ.get("TEST_PASSWORD")
+        cls.incorrect_username = "nonexistantuser"
+        cls.incorrect_password = "wrong"
 
     def setUp(self):
         pass
@@ -24,17 +28,20 @@ class TestAuthenticationClass(unittest.TestCase):
 
         # Invalid number of args
         self.assertRaises(TypeError, Authentication)
-        self.assertRaises(TypeError, Authentication, self.CORRECT_USERNAME)
+        self.assertRaises(TypeError, Authentication, self.correct_username)
 
         # Correct usage, invalid credentials
-        self.assertRaises(LoginInvalid, Authentication, self.INCORRECT_USERNAME, self.INCORRECT_PASSWORD)
+        self.assertRaises(LoginInvalid, Authentication, self.incorrect_username, self.incorrect_password)
 
         # Correct usage
-        auth = Authentication(self.CORRECT_USERNAME, self.CORRECT_PASSWORD)
+        auth = Authentication(self.correct_username, self.correct_username)
 
         self.assertIsInstance(auth, Authentication)
         self.assertIsNotNone(auth.username)
-        self.assertEquals(auth.username, self.CORRECT_USERNAME)
+        self.assertEquals(auth.username, self.correct_username)
+
+        self.assertTrue(auth.validated)
+
         if sys.platform.startswith("win"):
             self.assertIsNotNone(auth.win32_token)
             self.assertEquals(auth.win32_token.__class__.__name__, "PyHANDLE")
