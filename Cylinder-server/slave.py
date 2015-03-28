@@ -24,12 +24,16 @@ class SlaveClient(basic.LineReceiver):
         self.json_command_handler = FileSystemProcedures(self.factory.username, self.factory.user_dir)
         self.json_command_handler.subscribe("Tasks", self.sendObject)
 
-    def dataReceived(self, sdata):
-        data = json.loads(sdata)
-        # handle cmd
-        log.msg("Handling: %s" % sdata)
-        # Once we've exhausted the prior options (server->slave commands)
-        self.sendObject(self.json_command_handler(data))
+    def lineReceived(self, sdata):
+        try:
+            data = json.loads(sdata)
+        except ValueError, e:
+            log.msg("Unable to decode JSON data: %s" % sdata)
+        else:
+            # handle cmd
+            log.msg("Handling: %s" % sdata)
+            # Once we've exhausted the prior options (server->slave commands)
+            self.sendObject(self.json_command_handler(data))
 
     def sendObject(self, obj):
         return_str = json.dumps(obj)

@@ -84,7 +84,9 @@ class FileSystemDirectory(FileSystemEntity):
         return FileSystemDirectory(dir_path)
 
     def list_basic(self):
-        return os.listdir(self.get_path())
+        list = os.listdir(self.get_path())
+        list.sort()
+        return list
 
     def list_contents(self):
         collection = list()

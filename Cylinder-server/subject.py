@@ -54,6 +54,30 @@ class EventSubject:
     def __init__(self):
         self.subscribers = {}
 
+    def cleanup(self, name=None):
+        if name is None:
+            i = 0
+            for name in self.subscribers:
+                i += self.cleanup(name)
+            return i
+        elif name in self.subscribers:
+            to_remove = []
+            for fn in self.subscribers[name]:
+                if isinstance(fn, WeakMethod):
+                    if fn() is None:
+                        to_remove.append(fn)
+
+            for fn in to_remove:
+                self.subscribers[name].remove(fn)
+                print "Removed ", fn
+            return len(to_remove)
+        else:
+            return None
+
+    def count(self, name):
+        return 0 if self.cleanup(name) is None else len( self.subscribers[name] )
+
+
     def subscribe(self, name, func):
         if not callable(func):
             raise TypeError("Expecting callable type")
@@ -66,23 +90,13 @@ class EventSubject:
 
     def notify(self, name, *args):
         i = 0
-        if name in self.subscribers:
-            to_remove = []
-
+        if self.cleanup(name) is not None:
             for fn in self.subscribers[name]:
                 if isinstance(fn, WeakMethod):
-                    if not fn._dead():
-                        fn()(*args)
-                        i += 1
-                    else:
-                        to_remove.append(fn)
+                    fn()(*args)
                 else:
                     fn(*args)
-                    i += 1
-
-            for fn in to_remove:
-                self.subscribers[name].remove(fn)
-                print "Removed ", fn
+                i += 1
         return i
 
 

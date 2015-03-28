@@ -69,6 +69,8 @@ if sys.platform.startswith("win"):
     subprocess._subprocess.CreateProcess = __create_process
 
     def create_process_as(user_auth, args=list(), **kwargs):
+        if isinstance(args, str):
+            args = list(args)
         if "startupinfo" not in kwargs:
             kwargs["startupinfo"] = subprocess.STARTUPINFO()
         kwargs["startupinfo"].token = user_auth.win32_token
@@ -78,4 +80,6 @@ elif sys.platform in ["linux2", "darwin"]:
     import subprocess
 
     def create_process_as(user_auth, args=list(), **kwargs):
+        if isinstance(args, str):
+            args = list(args)
         return subprocess.Popen(["sudo", "-nu", user_auth.username] + args, **kwargs)

@@ -328,7 +328,7 @@ class TestFileSystemProcedures(unittest.TestCase):
         from fsentity import FileSystemDirectory
 
         e = FileSystemDirectory(self.static_dir)
-        l = e.list()
+        l = e.list_basic()
         self.assertListEqual(l, self.expected_static_list)
 
         # TODO: Expand to cover multi list formats

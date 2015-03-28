@@ -34,7 +34,7 @@ class TestAuthenticationClass(unittest.TestCase):
         self.assertRaises(LoginInvalid, Authentication, self.incorrect_username, self.incorrect_password)
 
         # Correct usage
-        auth = Authentication(self.correct_username, self.correct_username)
+        auth = Authentication(self.correct_username, self.correct_password)
 
         self.assertIsInstance(auth, Authentication)
         self.assertIsNotNone(auth.username)

@@ -9,14 +9,12 @@ import subject
 import json
 import os
 import useful
+from datetime import datetime
 
 
 class SlaveConnectionHandler(basic.LineReceiver):
     def __init__(self):
         self.username = None
-
-    def rawDataReceived(self, data):
-        pass
 
     def connectionMade(self):
         log.msg("Connected to a slave")
@@ -43,10 +41,13 @@ class SlaveConnectionHandler(basic.LineReceiver):
         if self.username is None:
             if "service_username" in data:
                 self.username = data["service_username"]
-                self.factory.subscribe_weak("in." + self.username, self.sendObject)
-                log.msg("%s's slave connected" % self.username)
+
+                if not self.factory.register_slave(self.username):
+                    self.disconnect()
+                else:
+                    self.factory.subscribe_weak("in." + self.username, self.sendObject)
+                    log.msg("%s's slave connected" % self.username)
             else:
-                # This took so long to find
                 self.disconnect()
         else:
             log.msg("Notifying handlers from %s's slave" % self.username)
@@ -66,6 +67,17 @@ class SlaveHandler(protocol.ServerFactory, subject.EventRetainer):
         self.service_port = listener.getHost().port
         self.exec_path = useful.get_exec_path()
         self.script_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+        self.launching = []
+
+    def register_slave(self, username):
+        if username not in self.launching:
+            log.err("Was not expecting a connection from %s's slave" % username)
+        elif self.count("in." + username):
+            log.err("There is already an active slave connection for %s" % username)
+        else:
+            self.launching.remove(username)
+            return True
+        return False
 
     def launch_slave_process(self, user_auth):
         log.msg("Launching %s %s %s %s %s"
@@ -81,7 +93,8 @@ class SlaveHandler(protocol.ServerFactory, subject.EventRetainer):
             str(self.service_port)
         ])
 
+        self.launching.append(user_auth.username)
+
     def dispatch_command(self, user_auth, cmd_obj):
-        if self.notify("in." + user_auth.username, cmd_obj) == 0:
-            # There wasn't a subscribed handler
+        if self.notify("in." + user_auth.username, cmd_obj) == 0 and user_auth.username not in self.launching:
             self.launch_slave_process(user_auth)
