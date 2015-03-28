@@ -118,6 +118,6 @@ class C03TestSpawnUserProcess(unittest.TestCase):
             print out
             out = out[:-2]
 
-        self.assertEquals(out, cls.correct_username)
+        self.assertEquals(out, self.correct_username)
 
         pass
