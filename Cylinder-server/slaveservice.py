@@ -10,6 +10,8 @@ import json
 import os
 import useful
 
+#That should be enough
+basic.LineReceiver.MAX_LENGTH = 100000
 
 class SlaveConnectionHandler(basic.LineReceiver):
     def __init__(self):

@@ -208,3 +208,6 @@ class FileSystemProcedures(JSONCallable, EventSubject):
             "list": FileSystemDirectory(path).list_contents()
         }
         return self.complete_task(True, data)
+
+    def jsonrpc_get_path_separator(self):
+        return self.complete_task(True, os.sep)

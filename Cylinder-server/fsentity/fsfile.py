@@ -230,10 +230,9 @@ class FileSystemFile(FileSystemEntity):
                 elif op.startswith("+ "):
                     # Don't add a newline if last op in diff
                     # (I still don't know why this works)
-                    if last_op:
-                        added_data = op[2:]
-                    else:
-                        added_data = op[2:] + known_eol_char
+
+                    added_data = op[2:] + known_eol_char
+
 
                     temp_crc = zlib.crc32(added_data, temp_crc)
                     out_file.write(added_data)
