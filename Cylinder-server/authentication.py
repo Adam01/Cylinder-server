@@ -1,5 +1,3 @@
-import os
-
 __author__ = 'Adam'
 
 import sys
@@ -10,8 +8,8 @@ import sys
         Use available methods to authenticate supplied system credentials.
         On windows the native LogonUser is used.
         On Linux, PAM is required and used by default.
-        If specified, the passwd and shadow files are used - note this requires the calling user to be part of the
-        shadow group.
+        If specified, the passwd and shadow files are used - note this
+        requires the calling user to be part of the shadow group.
 
     Usage:
 
@@ -96,9 +94,10 @@ if sys.platform.startswith("win"):
         def __init__(self, username, password, use_pam=None):
 
             try:
-                self.win32_token = win32security.LogonUser(username, None, password,
-                                                           win32security.LOGON32_LOGON_INTERACTIVE,
-                                                           win32security.LOGON32_PROVIDER_DEFAULT,
+                self.win32_token = win32security.LogonUser(
+                    username, None, password,
+                    win32security.LOGON32_LOGON_INTERACTIVE,
+                    win32security.LOGON32_PROVIDER_DEFAULT,
                 )
             except win32security.error as e:
                 raise {
@@ -110,11 +109,17 @@ if sys.platform.startswith("win"):
                     1331: LoginLockedError(username),
                 }.get(
                     e[0],
-                    LoginError("Failed to log in as '%s': %i %s" % (username, e[0], e[2]))
+                    LoginError("Failed to log in as '%s': %i %s" % (
+                        username, e[0], e[2]
+                    ))
                 )
 
             self.username = username
-            self.home_dir = win32profile.GetUserProfileDirectory(self.win32_token)
+
+            self.home_dir = win32profile.GetUserProfileDirectory(
+                self.win32_token
+            )
+
             self.validated = True
 
 elif sys.platform in ["linux2", "darwin"]:
@@ -123,11 +128,10 @@ elif sys.platform in ["linux2", "darwin"]:
     import spwd
 
     class Authentication:
-
         """
-            Use PAM if the process's owner does not have access to /etc/shadow
-            Access is usually with root or being a member of the shadow group
-            Don't use root
+        Use PAM if the process's owner does not have access to /etc/shadow
+        Access is usually with root or being a member of the shadow group
+        Don't use root
         """
 
         def __init__(self, username, password, use_pam=True):
@@ -173,7 +177,7 @@ elif sys.platform in ["linux2", "darwin"]:
                         raise LoginInvalid(username)
 
                 self.home_dir = pwd_entry[5]
-            except KeyError, e:
+            except KeyError:
                 # raise LoginNoUser(username)
                 raise LoginInvalid(username)
 

@@ -10,6 +10,4 @@ def refactored_function(output_text):
 
 refactored_function(sys.platform)
 
-
 # One last comment
-

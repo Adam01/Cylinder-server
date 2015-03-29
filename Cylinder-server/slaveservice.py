@@ -9,7 +9,6 @@ import subject
 import json
 import os
 import useful
-from datetime import datetime
 
 
 class SlaveConnectionHandler(basic.LineReceiver):
@@ -27,7 +26,10 @@ class SlaveConnectionHandler(basic.LineReceiver):
             log.msg("Lost connection to unknown slave")
 
     def disconnect(self):
-        log.err("Disconnecting %s's slave connection" % (self.username or "UNKNOWN"))
+        log.err("Disconnecting %s's slave connection" % (
+            self.username or "UNKNOWN"
+        ))
+
         self.transport.loseConnection()
 
     def lineReceived(self, message):
@@ -45,7 +47,8 @@ class SlaveConnectionHandler(basic.LineReceiver):
                 if not self.factory.register_slave(self.username):
                     self.disconnect()
                 else:
-                    self.factory.subscribe_weak("in." + self.username, self.sendObject)
+                    self.factory.subscribe_weak("in." + self.username,
+                                                self.sendObject)
                     log.msg("%s's slave connected" % self.username)
             else:
                 self.disconnect()
@@ -55,7 +58,8 @@ class SlaveConnectionHandler(basic.LineReceiver):
 
     def sendObject(self, obj):
         json_data = json.dumps(obj)
-        log.msg("Forwarding data to %s's slave: %s" % (self.username, json_data))
+        log.msg(
+            "Forwarding data to %s's slave: %s" % (self.username, json_data))
         self.sendLine(json_data)
 
 
@@ -66,23 +70,31 @@ class SlaveHandler(protocol.ServerFactory, subject.EventRetainer):
         listener = reactor.listenTCP(0, self)
         self.service_port = listener.getHost().port
         self.exec_path = useful.get_exec_path()
-        self.script_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+        self.script_path = os.path.abspath(
+            os.path.dirname(os.path.realpath(__file__)))
         self.launching = []
 
     def register_slave(self, username):
         if username not in self.launching:
-            log.err("Was not expecting a connection from %s's slave" % username)
+            log.err(
+                "Was not expecting a connection from %s's slave" % username
+            )
+
         elif self.count("in." + username):
-            log.err("There is already an active slave connection for %s" % username)
+            log.err(
+                "There is already an active slave connection for %s" % username
+            )
+
         else:
             self.launching.remove(username)
             return True
         return False
 
     def launch_slave_process(self, user_auth):
-        log.msg("Launching %s %s %s %s %s"
-                % (self.exec_path, self.script_path, "slave", user_auth.home_dir, self.service_port)
-        )
+        log.msg("Launching %s %s %s %s %s" % (
+            self.exec_path, self.script_path, "slave", user_auth.home_dir,
+            self.service_port
+        ))
 
         userprocess.create_process_as(user_auth, [
             self.exec_path,
@@ -96,5 +108,6 @@ class SlaveHandler(protocol.ServerFactory, subject.EventRetainer):
         self.launching.append(user_auth.username)
 
     def dispatch_command(self, user_auth, cmd_obj):
-        if self.notify("in." + user_auth.username, cmd_obj) == 0 and user_auth.username not in self.launching:
+        if self.notify("in." + user_auth.username, cmd_obj) == 0 \
+                and user_auth.username not in self.launching:
             self.launch_slave_process(user_auth)

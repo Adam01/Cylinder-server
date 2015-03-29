@@ -1,6 +1,6 @@
 __author__ = 'Adam'
 
-# import watchdog for monitoring file system events
+# TODO: import watchdog for monitoring file system events
 import os
 import stat
 import sys
@@ -12,6 +12,7 @@ types = Enum('FSEntityType', 'file directory other')
 
 FileSystemFile = None
 FileSystemDirectory = None
+
 
 class EntityMetadata:
     def __init__(self, path):
@@ -26,9 +27,14 @@ class EntityMetadata:
         if sys.platform.startswith("win"):
             import win32security
 
-            sd = win32security.GetFileSecurity(self.path, win32security.OWNER_SECURITY_INFORMATION)
+            sd = win32security.GetFileSecurity(
+                self.path, win32security.OWNER_SECURITY_INFORMATION
+            )
+
             owner_sid = sd.GetSecurityDescriptorOwner()
-            self.owner, _domain, _type = win32security.LookupAccountSid(None, owner_sid)
+            self.owner, _domain, _type = win32security.LookupAccountSid(
+                None, owner_sid
+            )
         elif sys.platform.startswith("linux"):
             import pwd
 
@@ -38,10 +44,12 @@ class EntityMetadata:
         shutil.copystat(self.path, target_entity.get_path())
 
         if sys.platform.startswith("linux"):
-            os.chown(target_entity.get_path(), self.__stat.st_uid, self.__stat.st_gid)
+            os.chown(
+                target_entity.get_path(), self.__stat.st_uid,
+                self.__stat.st_gid
+            )
 
         target_entity.update_meta()
-
 
 
 def get_enum_type(mode):
@@ -53,10 +61,11 @@ def get_enum_type(mode):
         return types.other
 
 
-'''
-        Paths must be absolute when creating FileSystem* instances, these classes represent an existing entity in
-        the file system and won't take into account the current working directory.
-'''
+"""
+Paths must be absolute when creating FileSystem* instances, these classes
+represent an existing entity in the file system and won't take into account
+the current working directory.
+"""
 
 
 class FileSystemEntity:
@@ -117,10 +126,12 @@ class FileSystemEntity:
         return self.get_path().startswith(target_dir.get_path())
 
     def parent_of(self, path):
-        return os.path.normcase(path).startswith(os.path.normcase(self.get_path()))
+        return os.path.normcase(path).startswith(
+            os.path.normcase(self.get_path()))
 
     def equals(self, path):
-        return os.path.normcase(os.path.abspath(path)) == os.path.normcase(self.get_path())
+        return os.path.normcase(os.path.abspath(path)) == os.path.normcase(
+            self.get_path())
 
     def move_to(self, target_dir, target_name=None):
         if not isinstance(target_dir, FileSystemDirectory):
@@ -136,17 +147,21 @@ class FileSystemEntity:
         os.rename(self.get_path(), target_path)
         self.__init__(target_path)
 
-
-    """ These aren't very smart
-    def copy_to(self, target_dir, target_name=None, recursive=True, on_enter_dir=None, on_copied_file=None):
-        instance = self.get_type_instance()
-        if isinstance(instance, FileSystemDirectory):
-            return instance.copy_to(target_dir, target_name, recursive=recursive, on_enter_dir=on_enter_dir,
-                                    on_copied_file=on_copied_file)
-        elif isinstance(instance, FileSystemFile):
-            return instance.copy_to(target_dir, target_name)
-        return None
     """
+    These aren't very smart
+    """
+
+    # def copy_to(self, target_dir, target_name=None, recursive=True,
+    #             on_enter_dir=None, on_copied_file=None):
+    #     instance = self.get_type_instance()
+    #     if isinstance(instance, FileSystemDirectory):
+    #         return instance.copy_to(target_dir, target_name,
+    #                                 recursive=recursive,
+    #                                 on_enter_dir=on_enter_dir,
+    #                                 on_copied_file=on_copied_file)
+    #     elif isinstance(instance, FileSystemFile):
+    #         return instance.copy_to(target_dir, target_name)
+    #     return None
 
     def call_instance_func(self, func_str, **kwargs):
         entity_type = self.get_type_instance()
@@ -154,7 +169,6 @@ class FileSystemEntity:
             if hasattr(type, func_str):
                 return getattr(entity_type, func_str)(**kwargs)
         return None
-
 
     def remove(self):
         os.remove(self.get_path())

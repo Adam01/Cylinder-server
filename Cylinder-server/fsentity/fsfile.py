@@ -35,8 +35,9 @@ class FileSystemFile(FileSystemEntity):
         set_contents
 
         Write data in the form of target_encoding.
-        'detect' will, if supplied a byte string, use chardet to figure out the encoding and write it as is
-        if a supplied unicode, 'detect' will assume utf-8
+        'detect' will, if supplied a byte string, use chardet to figure out
+        the encoding and write it as is if a supplied unicode, 'detect'
+        will assume utf-8
 
         'current' will use the encoding currently in the file
 
@@ -63,11 +64,9 @@ class FileSystemFile(FileSystemEntity):
         with codecs.open(self.get_path(), 'wb', encoding=target_encoding) as f:
             f.write(data)
 
-
     def set_contents_raw(self, data):
         with open(self.get_path(), "wb") as f:
             f.write(data)
-
 
     def copy_to(self, target_dir, target_name=None):
         if not isinstance(target_dir, fsentity.FileSystemDirectory):
@@ -90,10 +89,10 @@ class FileSystemFile(FileSystemEntity):
         detector = UniversalDetector()
         for line in file(self.get_path(), 'rb'):
             detector.feed(line)
-            if detector.done: break
+            if detector.done:
+                break
         detector.close()
         return detector.result["encoding"] or default_to
-
 
     def get_line_ending(self, known_encoding=None):
         import codecs
@@ -102,13 +101,13 @@ class FileSystemFile(FileSystemEntity):
             known_encoding = self.get_encoding()
 
         with codecs.open(self.get_path(), 'rb', encoding=known_encoding) as f:
-            sample = f.read(1000)  # If a new line isn't in this, it's probably not a text file
+            sample = f.read(
+                1000
+            )  # If a new line isn't in this, it's probably not a text file
 
-        # This counts the occurrences of LF, CR, and CRLF's in the sample string
-        results = dict()
-        results["LF"] = 0
-        results["CRLF"] = 0
-        results["CR"] = 0
+        # This counts the occurrences of LF, CR, and CRLF's in the sample
+        # string
+        results = {"LF": 0, "CRLF": 0, "CR": 0}
 
         start = 0
 
@@ -118,7 +117,8 @@ class FileSystemFile(FileSystemEntity):
 
             if cr_loc == -1 and lf_loc == -1:  # None found
                 break
-            elif lf_loc == -1:  # Only found CR TODO: check if the CR is at the end of the sample
+            elif lf_loc == -1:  # Only found CR
+                # TODO: check if the CR is at the end of the sample
                 results["CR"] += 1
                 break
             elif cr_loc == -1:  # Only found LF
@@ -127,7 +127,8 @@ class FileSystemFile(FileSystemEntity):
             elif cr_loc == lf_loc - 1:  # Found CRLF
                 results["CRLF"] += 1
                 start = lf_loc + 1
-            elif cr_loc > lf_loc:  # Found LF and then a CR, need to see if there's another LF after the CR
+            elif cr_loc > lf_loc:  # Found LF and then a CR,
+                # need to see if there's another LF after the CR
                 results["LF"] += 1
                 start = cr_loc
             elif lf_loc > cr_loc:  # Found CR and then a LF, count both
@@ -139,9 +140,11 @@ class FileSystemFile(FileSystemEntity):
 
         return most_used, results
 
-    def get_eol_char(self, known_line_ending=None, known_encoding=None, default_to="\n"):
+    def get_eol_char(self, known_line_ending=None, known_encoding=None,
+                     default_to="\n"):
         if known_line_ending is None:
-            known_line_ending, unused = self.get_line_ending(known_encoding=known_encoding)
+            known_line_ending, unused = self.get_line_ending(
+                known_encoding=known_encoding)
         if known_line_ending == "CR":
             return '\r'
         elif known_line_ending == "CRLF":
@@ -152,10 +155,13 @@ class FileSystemFile(FileSystemEntity):
             return default_to
 
     def get_programming_language(self):
-        from pygments.lexers import guess_lexer, guess_lexer_for_filename
+        from pygments.lexers import guess_lexer_for_filename
 
         with open(self.get_path(), "r") as f:
-            return guess_lexer_for_filename(self.get_base_name(), f.read()).name
+            return guess_lexer_for_filename(
+                self.get_base_name(),
+                f.read()
+            ).name
 
     def get_crc32(self):
         import zlib
@@ -165,8 +171,10 @@ class FileSystemFile(FileSystemEntity):
             prev = zlib.crc32(eachLine, prev)
         return prev
 
-    # Alter a files content from a compressed ndiff mapping (see useful.py : make_comp_diff ),
-    def set_from_comp_diff(self, diff_obj, original_crc=None, known_encoding=None, known_eol_char=None,
+    # Alter a files content from a compressed ndiff mapping (see useful.py :
+    # make_comp_diff ),
+    def set_from_comp_diff(self, diff_obj, original_crc=None,
+                           known_encoding=None, known_eol_char=None,
                            known_line_ending=None):
 
         import codecs
@@ -177,13 +185,19 @@ class FileSystemFile(FileSystemEntity):
             known_encoding = self.get_encoding()
 
         if known_eol_char is None:
-            known_eol_char = self.get_eol_char(known_encoding=known_encoding, known_line_ending=known_line_ending)
+            known_eol_char = self.get_eol_char(
+                known_encoding=known_encoding,
+                known_line_ending=known_line_ending
+            )
 
         temp_dir = fsentity.FileSystemDirectory(tempfile.mkdtemp())
         in_file_obj = self.copy_to(temp_dir)
 
         # TODO investigate whether encoding is needed
-        in_file = codecs.open(in_file_obj.get_path(), 'rb', encoding=known_encoding)
+        in_file = codecs.open(
+            in_file_obj.get_path(), 'rb',
+            encoding=known_encoding
+        )
 
         self.remove()
         out_file = codecs.open(self.get_path(), "wb", encoding=known_encoding)
@@ -203,21 +217,27 @@ class FileSystemFile(FileSystemEntity):
                 current_line += 1
                 # print current_line-1, "Preserving:", preserved_data[:-1]
 
-            # The file pointer is now at the start of the line we want to modify
+            # The file pointer is now at the start of the line we want to
+            # modify
 
             op_count = len(ops) - 1
             for op_i, op in enumerate(ops):
                 last_op = (last_line == line) and (op_i == op_count)
                 if op.startswith("- "):
-                    #removed_data =
+                    # removed_data =
                     in_file.readline()
-                    #print current_line, "Removing:", removed_data[:-1]
+                    # print current_line, "Removing:", removed_data[:-1]
                 elif op.startswith("+ "):
-                    # Don't add a newline if last op in diff (I still don't know why this works)
-                    added_data = ( op[2:] ) if last_op else ( op[2:] + known_eol_char)
+                    # Don't add a newline if last op in diff
+                    # (I still don't know why this works)
+                    if last_op:
+                        added_data = op[2:]
+                    else:
+                        added_data = op[2:] + known_eol_char
+
                     temp_crc = zlib.crc32(added_data, temp_crc)
                     out_file.write(added_data)
-                    #print current_line, "Adding:", added_data[:-1]
+                    # print current_line, "Adding:", added_data[:-1]
 
         # Write rest of file
         remaining_data = in_file.read()
@@ -236,8 +256,8 @@ class FileSystemFile(FileSystemEntity):
                 self.remove()
                 in_file_obj.move_to(self.get_dir_obj())
                 self.update_meta()
-                print "CRC's don't match"
-                # TODO throw error
+                print "CRCs don't match"
+                # TODO: throw error
                 return False
 
         temp_dir.remove()

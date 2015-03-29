@@ -5,7 +5,7 @@ import weakref
 ''' Credit to Joseph A. Knapka for the following two classes '''
 
 
-class _weak_callable:
+class WeakCallable:
     def __init__(self, obj, func):
         self._obj = obj
         self._meth = func
@@ -21,7 +21,7 @@ class _weak_callable:
             return self._obj
         if attr == 'im_func':
             return self._meth
-        raise AttributeError, attr
+        raise AttributeError(attr)
 
 
 class WeakMethod:
@@ -41,16 +41,17 @@ class WeakMethod:
     def __call__(self):
         if self._dead():
             return None
-        return _weak_callable(self._obj(), self._meth)
+        return WeakCallable(self._obj(), self._meth)
 
     def _dead(self):
         return self._obj is not None and self._obj() is None
 
 
-''' Offers observer/subscriber pattern support '''
-
-
 class EventSubject:
+    """
+    Offers observer/subscriber pattern support
+    """
+
     def __init__(self):
         self.subscribers = {}
 
@@ -75,8 +76,7 @@ class EventSubject:
             return None
 
     def count(self, name):
-        return 0 if self.cleanup(name) is None else len( self.subscribers[name] )
-
+        return 0 if self.cleanup(name) is None else len(self.subscribers[name])
 
     def subscribe(self, name, func):
         if not callable(func):
@@ -100,13 +100,12 @@ class EventSubject:
         return i
 
 
-'''
+class EventRetainer(EventSubject):
+    """
     Following class keeps hold of the event if a subscriber is not available.
     Re-fires as soon as a subscriber becomes available.
-'''
+    """
 
-
-class EventRetainer(EventSubject):
     def __init__(self):
         EventSubject.__init__(self)
         self.retained = {}

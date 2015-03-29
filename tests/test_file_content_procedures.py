@@ -20,7 +20,8 @@ class TestFileContentProcedures(unittest.TestCase):
 
         import codecs
 
-        with codecs.open(cls.text_file_path, 'rb', encoding=cls.text_file_encoding) as f:
+        with codecs.open(cls.text_file_path, 'rb',
+                         encoding=cls.text_file_encoding) as f:
             cls.text_file_contents = f.read()
 
         cls.script_file_name = "ScriptFile_UTF8_LF.py"
@@ -28,32 +29,30 @@ class TestFileContentProcedures(unittest.TestCase):
         cls.script_file_encoding = "UTF-8"
         cls.script_file_eol = "LF"
 
-        with codecs.open(cls.script_file_path, 'rb', encoding=cls.script_file_encoding) as f:
+        with codecs.open(cls.script_file_path, 'rb',
+                         encoding=cls.script_file_encoding) as f:
             cls.script_file_contents = f.read()
 
         cls.set_contents = cls.text_file_contents
         cls.set_name = "TestSetContents.txt"
         cls.set_path = os.path.join(cls.test_dir, cls.set_name)
 
-
         # diff testing
         cls.diff_target_path = os.path.join(cls.test_dir, "ScriptFile_Copy.py")
         shutil.copyfile(cls.script_file_path, cls.diff_target_path)
 
-        cls.diff_new_path = os.path.join(cls.test_dir, "ScriptFile_Diff_Test.py")
+        cls.diff_new_path = os.path.join(cls.test_dir,
+                                         "ScriptFile_Diff_Test.py")
 
-        target_data = ""
         with open(cls.diff_target_path, "rb") as f:
-            target_data = f.read().split("\n");
+            target_data = f.read().split("\n")
 
-        new_data = ""
         with open(cls.diff_new_path, "rb") as f:
-            new_data = f.read().split("\n");
+            new_data = f.read().split("\n")
 
         diff_data = difflib.ndiff(target_data, new_data)
         diff_data = list(diff_data)
         cls.comp_diff_data = useful.make_comp_diff(diff_data)
-
 
     @classmethod
     def tearDownClass(cls):
@@ -62,23 +61,23 @@ class TestFileContentProcedures(unittest.TestCase):
         pass
 
     '''
-        The system is required to be able to obtain the content of a file.
-        This test is successful if the content is matched as is with expected data.
+    The system is required to be able to obtain the content of a file.
+    This test is successful if the content is matched as is with expected data.
     '''
 
     def test_get_file_contents(self):
         from fsentity import FileSystemFile
 
         script_file = FileSystemFile(self.script_file_path)
-        self.assertEquals(script_file.get_contents()[0], self.script_file_contents)
+        self.assertEquals(script_file.get_contents()[0],
+                          self.script_file_contents)
 
         text_file = FileSystemFile(self.text_file_path)
         self.assertEquals(text_file.get_contents()[0], self.text_file_contents)
 
-
     '''
-        The system must be able to set the contents of a file.
-        Test is successful if changes are made that match the expected outcome.
+    The system must be able to set the contents of a file.
+    Test is successful if changes are made that match the expected outcome.
     '''
 
     def test_set_file_contents(self):
@@ -87,7 +86,6 @@ class TestFileContentProcedures(unittest.TestCase):
         d = FileSystemDirectory(self.test_dir)
         d.create_file(self.set_name, self.set_contents)
 
-        file_data = ""
         import codecs
 
         with codecs.open(self.set_path, 'rb', encoding="utf-8") as f:
@@ -98,9 +96,11 @@ class TestFileContentProcedures(unittest.TestCase):
         self.assertEquals(file_data, self.set_contents)
 
     '''
-        The system will need to update a file's contents from a differential format.
-        The test is successful if the resulting file contents matches the result of the original content with
-        a supplied delta.
+    The system will need to update a file's contents from a differential
+    format.
+    The test is successful if the resulting file contents matches the result
+    of the original content with
+    a supplied delta.
     '''
 
     def test_set_file_from_diff(self):
@@ -108,7 +108,8 @@ class TestFileContentProcedures(unittest.TestCase):
 
         target_file = FileSystemFile(self.diff_target_path)
         diff_crc = FileSystemFile(self.diff_new_path).get_crc32()
-        self.assertTrue(target_file.set_from_comp_diff(self.comp_diff_data, original_crc=diff_crc))
+        self.assertTrue(target_file.set_from_comp_diff(self.comp_diff_data,
+                                                       original_crc=diff_crc))
 
     ''' Identify byte encoding '''
 
@@ -116,10 +117,14 @@ class TestFileContentProcedures(unittest.TestCase):
         from fsentity import FileSystemFile
 
         text_file = FileSystemFile(self.text_file_path)
-        self.assertEqual(text_file.get_encoding().upper(), self.text_file_encoding)
+        self.assertEqual(
+            text_file.get_encoding().upper(),
+            self.text_file_encoding
+        )
 
         script_file = FileSystemFile(self.script_file_path)
-        self.assertEqual(self.script_file_encoding, script_file.get_encoding().upper())
+        self.assertEqual(self.script_file_encoding,
+                         script_file.get_encoding().upper())
 
     ''' Identify EOL format '''
 

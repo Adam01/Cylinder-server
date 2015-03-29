@@ -3,12 +3,12 @@ import os
 from twisted.python import log
 import webservice
 import sys
-import getopt
 
 
 class ServiceClass(daemon.Daemon):
     def __init__(self):
-        daemon.Daemon.__init__(self, './pidfile', stdin='/dev/null', stdout='./service.out.txt',
+        daemon.Daemon.__init__(self, './pidfile', stdin='/dev/null',
+                               stdout='./service.out.txt',
                                stderr='./service.out.txt')
 
     def run(self):
@@ -23,7 +23,7 @@ def main():
     if len(argv) <= 1:
         try:
             fname = os.path.split(sys.argv[0])[1]
-        except:
+        except Exception:
             fname = sys.argv[0]
 
         print "Usage: '%s [options] start|stop|restart'" % fname

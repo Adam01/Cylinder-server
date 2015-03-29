@@ -13,6 +13,8 @@ class AppServerSvc(win32serviceutil.ServiceFramework):
     _svc_name_ = "FileService"
     _svc_display_name_ = "File Service"
 
+    remote_debug = False
+    local_debug = False
 
     def __init__(self, args):
         win32serviceutil.ServiceFramework.__init__(self, args)
@@ -22,14 +24,15 @@ class AppServerSvc(win32serviceutil.ServiceFramework):
         reactor.stop()
 
     def SvcDoRun(self):
-
-        self.remote_debug = ("rdebug" in sys.argv)
-        self.local_debug = ("debug" in sys.argv)
+        self.remote_debug = "rdebug" in sys.argv
+        self.local_debug = "debug" in sys.argv
 
         if self.remote_debug:
             sys.path.append(os.path.join(sys.prefix, "pycharm-debug.egg"))
             import pydevd
-            pydevd.settrace('localhost', port=43234, stdoutToServer=True, stderrToServer=True)
+
+            pydevd.settrace('localhost', port=43234, stdoutToServer=True,
+                            stderrToServer=True)
 
         # Change to our dir
         main_dir = os.path.dirname(os.path.realpath(__file__)) + "/.."
@@ -56,4 +59,6 @@ def main(rdebug=False):
     elif args[1].lower() == "debug":
         args.append("debug")
     print args
-    win32serviceutil.HandleCommandLine(AppServerSvc, os.path.realpath(__file__)[:-3] + ".AppServerSvc", args)
+    win32serviceutil.HandleCommandLine(
+        AppServerSvc, os.path.realpath(__file__)[:-3] + ".AppServerSvc", args
+    )

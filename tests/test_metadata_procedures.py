@@ -14,7 +14,9 @@ class TestMetaDataProcedures(unittest.TestCase):
         cls.user = getpass.getuser()
         handle, cls.file_path = tempfile.mkstemp()
         cls.file_size = random.randint(1000, 100000)
-        cls.file_data = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(cls.file_size))
+        cls.file_data = ''.join(
+            random.choice(string.ascii_letters + string.digits) for _ in
+            range(cls.file_size))
         os.write(handle, cls.file_data)
         os.close(handle)
 
@@ -26,7 +28,8 @@ class TestMetaDataProcedures(unittest.TestCase):
         from fsentity.fsentity import EntityMetadata
 
         e = EntityMetadata(self.file_path)
-        self.assertEquals(e.owner, self.user, "Owner of file does not match current user")
+        self.assertEquals(e.owner, self.user,
+                          "Owner of file does not match current user")
 
     def test_get_entity_permissions(self):
         from fsentity.fsentity import EntityMetadata
@@ -53,8 +56,14 @@ class TestMetaDataProcedures(unittest.TestCase):
         from fsentity.fsentity import FileSystemEntity
 
         e = FileSystemEntity(self.file_path)
-        self.assertEquals(e.get_size(), self.file_size, "Expected file size not returned")
-        self.assertEquals(e.get_type_instance().get_size(), self.file_size, "Expected file size not returned")
+        self.assertEquals(
+            e.get_size(), self.file_size,
+            "Expected file size not returned"
+        )
+        self.assertEquals(
+            e.get_type_instance().get_size(), self.file_size,
+            "Expected file size not returned"
+        )
 
         e.get_type_instance().get_size()  # count size of contents, recursively
         e.get_type_instance().get_content_count()  # get number of child items

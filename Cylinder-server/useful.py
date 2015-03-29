@@ -2,6 +2,7 @@ __author__ = 'Adam'
 import sys
 import os
 
+
 def copy_some(obj_from, obj_to, names):
     for n in names:
         if hasattr(obj_from, n):
@@ -17,7 +18,7 @@ def make_comp_diff(delta_list):
         if v.startswith("  "):
             i += 1
         elif v.startswith("+ ") or v.startswith("- "):
-            if not comp_delta.has_key(i):
+            if i not in comp_delta:
                 comp_delta[i] = list()
             comp_delta[i].append(v)
     return comp_delta

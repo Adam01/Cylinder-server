@@ -39,6 +39,8 @@ class AnonymousCommands(JSONCallable):
 
 class WSConnection(sockjs.cyclone.SockJSConnection):
     application = None
+    auth = None
+    single_user = False
 
     def connectionMade(self, *args, **kwargs):
         self.auth = None
@@ -61,26 +63,29 @@ class WSConnection(sockjs.cyclone.SockJSConnection):
             log.err("Slave processes not being used")
 
     def objectReceived(self, data):
-
         if self.auth is None:
             self.sendObject(AnonymousCommands(self)(data))
 
             if self.auth:
                 if self.single_user:
-                    self.fsprocs = FileSystemProcedures(self.auth.username, self.auth.home_dir)
+                    self.fsprocs = FileSystemProcedures(self.auth.username,
+                                                        self.auth.home_dir)
                     self.fsprocs.subscribe("Tasks", self.sendObject)
                 else:
-                    self.application.slave_handler.subscribe_weak("out." + self.auth.username, self.sendObject)
+                    self.application.slave_handler.subscribe_weak(
+                        "out." + self.auth.username, self.sendObject)
 
         elif self.single_user:
             self.sendObject(self.fsprocs(data))
         else:
             self.forwardToSlave(data)
 
-
     def sendObject(self, obj):
         json_data = json.dumps(obj)
-        log.msg("Sending back data to %s: %s" % (self.auth.username if self.auth else "Anonymous socket", json_data))
+        log.msg("Sending back data to %s: %s" % (
+            self.auth.username if self.auth else "Anonymous socket", json_data
+        ))
+
         self.sendMessage(json_data)
 
 
@@ -89,8 +94,11 @@ class MainHandler(cyclone.web.RequestHandler):
         self.write("Hello, %s" % self.request.protocol)
 
 
-def main(single_user=False, interface="127.0.0.1", key_file="config/server.key", cert_file="config/server.crt"):
-    cookie_secret = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(128))
+def main(single_user=False, interface="127.0.0.1",
+         key_file="config/server.key", cert_file="config/server.crt"):
+    cookie_secret = ''.join(
+        random.SystemRandom().choice(string.ascii_letters + string.digits) for
+        _ in range(128))
 
     # Web handlers
     settings = dict(
@@ -101,9 +109,7 @@ def main(single_user=False, interface="127.0.0.1", key_file="config/server.key",
 
     SockJSRouter = sockjs.cyclone.SockJSRouter(WSConnection, '/ws')
 
-    handlers = [
-                   (r"/", MainHandler)
-               ] + SockJSRouter.urls
+    handlers = [(r"/", MainHandler)] + SockJSRouter.urls
 
     application = cyclone.web.Application(handlers, **settings)
     WSConnection.application = application
@@ -113,7 +119,9 @@ def main(single_user=False, interface="127.0.0.1", key_file="config/server.key",
         application.slave_handler = SlaveHandler()
 
     reactor.listenTCP(8888, application, interface=interface)
-    reactor.listenSSL(8443, application, ssl.DefaultOpenSSLContextFactory(key_file, cert_file), interface=interface)
+    reactor.listenSSL(8443, application,
+                      ssl.DefaultOpenSSLContextFactory(key_file, cert_file),
+                      interface=interface)
 
     # Disable signal handling on windows service
     use_sig_handlers = (single_user or sys.platform != "win32")

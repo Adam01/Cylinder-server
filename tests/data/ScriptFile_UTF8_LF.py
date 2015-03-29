@@ -10,7 +10,4 @@ def some_function(a):
 
 some_function(os.platform)
 
-
-
 # One last comment
-

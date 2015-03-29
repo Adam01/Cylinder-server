@@ -3,10 +3,11 @@ __author__ = 'Adam'
 import unittest
 import os
 import sys
-from authentication import Authentication, LoginError, LoginInvalid, LoginNoUser
+from authentication import Authentication, LoginInvalid
 
 
-# @unittest.skipIf(os.environ.get('CI') is not None, "Cannot test user authentication on Travis CI")
+# @unittest.skipIf(os.environ.get('CI') is not None,
+# "Cannot test user authentication on Travis CI")
 @unittest.skipIf(os.environ.get("TEST_USER") is None or
                  os.environ.get("TEST_PASSWORD") is None,
                  "TestUserAuthentication: No correct test user supplied")
@@ -25,13 +26,13 @@ class TestAuthenticationClass(unittest.TestCase):
         pass
 
     def test_construct(self):
-
         # Invalid number of args
         self.assertRaises(TypeError, Authentication)
         self.assertRaises(TypeError, Authentication, self.correct_username)
 
         # Correct usage, invalid credentials
-        self.assertRaises(LoginInvalid, Authentication, self.incorrect_username, self.incorrect_password)
+        self.assertRaises(LoginInvalid, Authentication,
+                          self.incorrect_username, self.incorrect_password)
 
         # Correct usage
         auth = Authentication(self.correct_username, self.correct_password)
@@ -45,4 +46,3 @@ class TestAuthenticationClass(unittest.TestCase):
         if sys.platform.startswith("win"):
             self.assertIsNotNone(auth.win32_token)
             self.assertEquals(auth.win32_token.__class__.__name__, "PyHANDLE")
-

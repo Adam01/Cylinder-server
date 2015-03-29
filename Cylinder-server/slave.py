@@ -5,13 +5,13 @@ from twisted.internet import reactor
 from twisted.python import log
 from twisted.protocols import basic
 import json
-import sys
 from fsprocedures import FileSystemProcedures
-import getpass
 import os
 
 
 class SlaveClient(basic.LineReceiver):
+    json_command_handler = None
+
     def __init__(self):
         pass
 
@@ -21,13 +21,14 @@ class SlaveClient(basic.LineReceiver):
         msg["service_username"] = self.factory.username
         self.sendLine(json.dumps(msg))
         log.msg("Sent user identification")
-        self.json_command_handler = FileSystemProcedures(self.factory.username, self.factory.user_dir)
+        self.json_command_handler = FileSystemProcedures(self.factory.username,
+                                                         self.factory.user_dir)
         self.json_command_handler.subscribe("Tasks", self.sendObject)
 
     def lineReceived(self, sdata):
         try:
             data = json.loads(sdata)
-        except ValueError, e:
+        except ValueError:
             log.msg("Unable to decode JSON data: %s" % sdata)
         else:
             # handle cmd

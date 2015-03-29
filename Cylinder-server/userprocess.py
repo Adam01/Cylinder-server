@@ -3,43 +3,39 @@ __author__ = 'Adam'
 import sys
 import subprocess
 
-'''
-    Description:
+"""
+Description:
+    Create a process as another user.
+    Basically popen with a prefixed authentication parameter.
 
-        Create a process as another user.
-        Basically popen with a prefixed authentication parameter.
+    On windows this requires the calling process/user to have impersonate,
+    create objects, and change process token privileges (AKA Local Service
+    user)
 
-        On windows this requires the calling process/user to have impersonate, create objects, and change process token
-        privileges (AKA Local Service user)
-        On Linux sudo is used requiring the user has the correct permissions in the sudoers file.
-
-
-    Usage:
-
-        create_process_as( Authentication, args, **kwargs)
+    On Linux sudo is used requiring the user has the correct permissions
+    in the sudoers file.
 
 
-    Return:
+Usage:
+    create_process_as( Authentication, args, **kwargs)
 
-        Result of subprocess.popen
+Return:
+    Result of subprocess.popen
+
+Arguments:
+    Authentication instance with valid username credential (windows requires
+    the win32_token attribute to be set)
+    List/String of arguments forwarded to popen
+    dict of args also forwarded to popen
 
 
-    Arguments:
+>>> auth = Authentication("test","test")
+>>> popen_obj = create_process_as(auth, "whoami")
+>>> popen_obj.wait()
+>>> # etc...
 
-        Authentication instance with valid username credential (windows requires the win32_token attribute to be set)
-        List/String of arguments forwarded to popen
-        dict of args also forwarded to popen
-
-
-    Example:
-
-        auth = Authentication("test","test")
-        popen_obj = create_process_as(auth, "whoami")
-        popen_obj.wait()
-        # etc...
-
-    Note: I can't seem to get popen's env argument working with this
-'''
+Note: I can't seem to get popen's env argument working with this
+"""
 
 if sys.platform.startswith("win"):
     import win32process
@@ -51,10 +47,15 @@ if sys.platform.startswith("win"):
             new_info = win32process.STARTUPINFO()
         elif type(old_info) is type(win32process.STARTUPINFO()):
             new_info = subprocess.STARTUPINFO()
-        useful.copy_some(old_info, new_info, ["dwFlags", "hStdInput", "hStdOutput", "hStdErr", "wShowWindow"])
+        useful.copy_some(old_info, new_info,
+                         ["dwFlags", "hStdInput", "hStdOutput", "hStdErr",
+                          "wShowWindow"])
         return new_info
 
-    ''' Replace builtin CreateProcess and call CreateProcessAsUser if a token is supplied '''
+    """
+    Replace builtin CreateProcess and call CreateProcessAsUser if a token
+     is supplied
+     """
 
     __builtin_CreateProcess = subprocess._subprocess.CreateProcess
 
@@ -62,7 +63,8 @@ if sys.platform.startswith("win"):
         if hasattr(args[8], "token"):
             arg_list = list(args)
             arg_list[8] = __convert_startup_info(arg_list[8])
-            return win32process.CreateProcessAsUser(args[8].token, *tuple(arg_list))
+            return win32process.CreateProcessAsUser(args[8].token,
+                                                    *tuple(arg_list))
         else:
             return __builtin_CreateProcess(*args)
 
@@ -82,4 +84,5 @@ elif sys.platform in ["linux2", "darwin"]:
     def create_process_as(user_auth, args=list(), **kwargs):
         if isinstance(args, str):
             args = list(args)
-        return subprocess.Popen(["sudo", "-nu", user_auth.username] + args, **kwargs)
+        return subprocess.Popen(["sudo", "-nu", user_auth.username] + args,
+                                **kwargs)

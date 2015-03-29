@@ -10,7 +10,8 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         log.startLogging(sys.stdout)
         opt = sys.argv[1].lower()
-        if opt in ["rdebug", "debug", "start", "install", "remove", "stop", "restart", "status"]:
+        if opt in ["rdebug", "debug", "start", "install", "remove", "stop",
+                   "restart", "status"]:
 
             service.main()
 
@@ -27,5 +28,6 @@ if __name__ == '__main__':
 
     else:
         print "No command specified"
-        print "Service args: debug, start, stop, restart, install, remove, status"
+        print "Service args: debug, start, stop, restart, install, remove, " \
+              "status"
         print "or 'justme' for standalone"
