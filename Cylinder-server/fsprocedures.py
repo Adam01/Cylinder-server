@@ -17,7 +17,7 @@ class ResponseBase:
 
 class TaskError(ResponseBase, JSONCallableEscape):
     def __init__(self, _id, method, err):
-        ResponseBase.__init__(self, id, method, "Error")
+        ResponseBase.__init__(self, _id, method, "Error")
         self.error = err
 
     def __str__(self):
@@ -26,20 +26,20 @@ class TaskError(ResponseBase, JSONCallableEscape):
 
 class TaskInitiated(ResponseBase):
     def __init__(self, _id, method, data=None):
-        ResponseBase.__init__(self, id, method, "Initiated")
+        ResponseBase.__init__(self, _id, method, "Initiated")
         self.data = data
 
 
 class TaskProgressing(ResponseBase):
     def __init__(self, _id, method, progress, data):
-        ResponseBase.__init__(self, id, method, "Progressing")
+        ResponseBase.__init__(self, _id, method, "Progressing")
         self.progress = progress
         self.data = data
 
 
 class TaskCompleted(ResponseBase):
     def __init__(self, _id, method, result, data):
-        ResponseBase.__init__(self, id, method, "Completed")
+        ResponseBase.__init__(self, _id, method, "Completed")
         self.result = result
         self.data = data
 
@@ -47,7 +47,7 @@ class TaskCompleted(ResponseBase):
 class CopyTaskHandler:
     def __init__(self, fsprocs, _id, method, source, target, total):
         self.fsprocs = fsprocs
-        self.id = id
+        self.id = _id
         self.method = method
         self.source = source
         self.target = target
