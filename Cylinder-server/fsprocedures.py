@@ -1,7 +1,9 @@
+import types
+
 __author__ = 'Adam'
 
-from json_callable import JSONCallableEscape, JSONCallable
-from fsentity import FileSystemDirectory, FileSystemEntity, FileSystemFile
+from json_callable import JSONCallable, JSONError
+from fsentity import FileSystemDirectory, FileSystemEntity, FileSystemFile, EntityException
 import os
 from subject import EventSubject
 from twisted.internet import reactor
@@ -15,13 +17,11 @@ class ResponseBase:
         self.status = status
 
 
-class TaskError(ResponseBase, JSONCallableEscape):
+class TaskError(ResponseBase, Exception):
     def __init__(self, _id, method, err):
         ResponseBase.__init__(self, _id, method, "Error")
         self.error = err
 
-    def __str__(self):
-        return self.__dict__
 
 
 class TaskInitiated(ResponseBase):
@@ -119,6 +119,25 @@ class FileSystemProcedures(JSONCallable, EventSubject):
     def raise_error(self, err):
         raise TaskError(self.current_id, self.current_method, err)
 
+    def on_exception(self):
+        if isinstance(self.current_exception, TaskError):
+            self.current_result = self.current_exception
+        elif isinstance(self.current_exception, EntityException):
+            self.current_result = TaskError(self.current_id, self.current_method, str(self.current_exception))
+        else:
+            return False
+        return True
+
+    def post_process(self):
+        if isinstance(self.current_result, ResponseBase):
+            self.current_result = self.current_result.__dict__
+        elif not isinstance(self.current_result, types.DictType):
+            raise JSONError("unhandled return type: %s" % str(type(self.current_result)))
+
+        if "callback_id" in self.current_input:
+            self.current_result["callback_id"] = self.current_input["callback_id"]
+
+
     def correct_path(self, path):
         path = os.path.expanduser(path)
         path = os.path.abspath(path)
@@ -130,7 +149,7 @@ class FileSystemProcedures(JSONCallable, EventSubject):
 
         return path
 
-    def complete_task(self, result, data):
+    def complete_task(self, result, data=dict()):
         return TaskCompleted(self.current_id, self.current_method, result,
                              data)
 
@@ -211,3 +230,27 @@ class FileSystemProcedures(JSONCallable, EventSubject):
 
     def jsonrpc_get_path_separator(self):
         return self.complete_task(True, os.sep)
+
+    def jsonrpc_get_file_contents(self, path):
+        path = self.correct_path(path)
+        file = FileSystemFile(path)
+        file_data, encoding = file.get_contents()
+        line_ending = file.get_line_ending(known_encoding=encoding)[0]
+        file_mime = file.get_mime_type()
+        file_lang = file.get_programming_language()
+        data = dict()
+        data["path"] = path
+        data["encoding"] = encoding
+        data["eol"] = line_ending
+        data["data"] = file_data.encode("utf-8")
+        data["lang"] = file_lang
+        data["mime"] = file_mime
+        return self.complete_task(True, data)
+
+    def jsonrpc_set_file_contents(self, path, data, encoding="current"):
+        path = self.correct_path(path)
+
+        file = FileSystemFile(path)
+        data = data.decode("utf-8")
+        file.set_contents(data, encoding)
+        return self.complete_task(True)

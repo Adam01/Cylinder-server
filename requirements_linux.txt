@@ -6,4 +6,5 @@ enum34
 chardet
 pygments
 sockjs-cyclone
+python-magic
 python-pam

@@ -5,5 +5,5 @@ service-identity
 enum34
 chardet
 pygments
-pypiwin32
 sockjs-cyclone
+pypiwin32

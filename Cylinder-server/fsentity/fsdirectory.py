@@ -1,17 +1,16 @@
 import os
 import copy
 import shutil
+import sys
 
 import fsentity
-from fsentity import FileSystemEntity, types
+from fsentity import FileSystemEntity, types, EntityException, EntityAccessError
 
 
-class NotADirectory(Exception):
-    def __init__(self, path):
-        self.path = path
+class NotADirectory(EntityException):
+    def __init__(self, path, err):
+        EntityException.__init__(path, "Not a directory")
 
-    def __str__(self):
-        return "Path is not a directory: '%s'" % self.path
 
 
 class FileSystemDirectory(FileSystemEntity):
@@ -79,13 +78,18 @@ class FileSystemDirectory(FileSystemEntity):
     def create_directory(self, name):
         dir_path = os.path.join(self.get_path(), name)
         if os.path.exists(dir_path):
-            # TODO: throw error
-            pass
+            raise EntityException(self.get_path(), "Entity already exists")
         os.mkdir(dir_path)
         return FileSystemDirectory(dir_path)
 
     def list_basic(self):
-        _list = os.listdir(self.get_path())
+        try:
+            _list = os.listdir(self.get_path())
+        except os.error, e:
+            if sys.platform.startswith("win") and e.errno == 5:
+                raise EntityAccessError(self.get_path(), e.strerror)
+            else:
+                raise EntityException(self.get_path(), e.strerror)
         _list.sort()
         return _list
 

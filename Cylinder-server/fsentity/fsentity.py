@@ -14,6 +14,19 @@ FileSystemFile = None
 FileSystemDirectory = None
 
 
+class EntityException(Exception):
+    def __init__(self, path, err):
+        self.path = path
+        self.error = err
+
+    def __str__(self):
+        return self.path + ": " + self.error
+
+
+class EntityAccessError(EntityException):
+    def __init__(self, path, err):
+        EntityException.__init__(self, path, err)
+
 class EntityMetadata:
     def __init__(self, path):
         self.path = path

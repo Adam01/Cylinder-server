@@ -3,6 +3,7 @@ from chardet.universaldetector import UniversalDetector
 import codecs
 import copy
 import shutil
+import sys
 
 import fsentity
 from fsentity import FileSystemEntity, types
@@ -156,12 +157,27 @@ class FileSystemFile(FileSystemEntity):
 
     def get_programming_language(self):
         from pygments.lexers import guess_lexer_for_filename
+        from pygments.util import ClassNotFound
 
-        with open(self.get_path(), "r") as f:
-            return guess_lexer_for_filename(
-                self.get_base_name(),
-                f.read()
-            ).name
+        try:
+            with open(self.get_path(), "r") as f:
+                return guess_lexer_for_filename(
+                    self.get_base_name(),
+                    f.read(2048)
+                ).name
+        except ClassNotFound, e:
+            return None
+
+    def get_mime_type(self):
+        if sys.platform.startswith("win"):
+            import mimetypes
+
+            return mimetypes.guess_type(self.get_path(), False)[0]
+        else:
+            import magic
+
+            mime = magic.Magic(mime=True)
+            return mime.from_file(self.get_path())
 
     def get_crc32(self):
         import zlib

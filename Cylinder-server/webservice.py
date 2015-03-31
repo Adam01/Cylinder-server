@@ -1,3 +1,5 @@
+import types
+
 __author__ = 'Adam'
 
 import cyclone.escape
@@ -13,9 +15,9 @@ import string
 import getpass
 
 from authentication import Authentication, LoginError
-from fsprocedures import FileSystemProcedures
+from fsprocedures import FileSystemProcedures, TaskCompleted, TaskError, ResponseBase
 from slaveservice import SlaveHandler
-from json_callable import JSONCallable
+from json_callable import JSONCallable, JSONError
 
 import sockjs.cyclone
 
@@ -26,15 +28,27 @@ class AnonymousCommands(JSONCallable):
         JSONCallable.__init__(self)
         self.handler = handler
 
+    def on_exception(self):
+        if isinstance(self.current_exception, TaskError):
+            self.current_result = self.current_exception
+        else:
+            return False
+        return True
+
+    def post_process(self):
+        if isinstance(self.current_result, ResponseBase):
+            self.current_result = self.current_result.__dict__
+        elif not isinstance(self.current_result, types.DictType):
+            raise JSONError("unhandled return type: %s" % str(type(self.current_result)))
+
     def jsonrpc_login(self, username, password):
         try:
             if self.handler.single_user and username != getpass.getuser():
-                log.msg("Username does not match current user")
-                return False
+                raise LoginError("Username does not match current user")
             self.handler.auth = Authentication(username, password)
-            return True
-        except LoginError:
-            return False
+            return TaskCompleted(self.current_id, self.current_method, True, True)
+        except LoginError, e:
+            return TaskError(self.current_id, self.current_method, str(e))
 
 
 class WSConnection(sockjs.cyclone.SockJSConnection):
