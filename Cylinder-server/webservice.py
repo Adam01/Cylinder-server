@@ -86,7 +86,7 @@ class WSConnection(sockjs.cyclone.SockJSConnection):
                                                         self.auth.home_dir)
                     self.fsprocs.subscribe("Tasks", self.sendObject)
                 else:
-                    self.application.slave_handler.subscribe_weak(
+                    self.application.slave_handler.subscribe(
                         "out." + self.auth.username, self.sendObject)
 
         elif self.single_user:

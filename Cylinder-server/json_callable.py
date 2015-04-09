@@ -13,8 +13,6 @@ import types
 class JSONError(Exception):
     def __init__(self, err):
         self.error = err
-        pass
-
     def __str__(self):
         return self.error
 
@@ -33,12 +31,12 @@ class JSONCallable:
     def post_process(self):
         return
 
-    def __call__(self, req):
+    def __call__(self, obj):
         try:
             self.current_exception = None
             self.current_result = None
 
-            self.current_input = req
+            self.current_input = obj
             self.current_method = self.current_input["method"]
             self.current_params = self.current_input["params"]
 

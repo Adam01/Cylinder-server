@@ -1,20 +1,20 @@
 __author__ = 'Adam'
 
 import weakref
+from functools import partial
 
-''' Credit to Joseph A. Knapka for the following two classes '''
 
+class WeakMethodInvalid(Exception):
+    def __str__(self):
+        return "A weak method was invoked on a dead object"
 
 class WeakCallable:
     def __init__(self, obj, func):
         self._obj = obj
-        self._meth = func
+        self._method = func
 
     def __call__(self, *args, **kws):
-        if self._obj is not None:
-            return self._meth(self._obj, *args, **kws)
-        else:
-            return self._meth(*args, **kws)
+        return self._method(self._obj, *args, **kws)
 
     def __getattr__(self, attr):
         if attr == 'im_self':
@@ -23,28 +23,31 @@ class WeakCallable:
             return self._meth
         raise AttributeError(attr)
 
-
 class WeakMethod:
-    """ Wraps a function or, more importantly, a bound method, in
-    a way that allows a bound method's object to be GC'd, while
-    providing the same interface as a normal weak reference. """
-
     def __init__(self, fn):
-        try:
+        if hasattr(fn, "im_self"):
             self._obj = weakref.ref(fn.im_self)
-            self._meth = fn.im_func
-        except AttributeError:
-            # It's not a bound method.
+            self._method = fn.im_func
+        else:
             self._obj = None
-            self._meth = fn
+            self._method = fn
 
-    def __call__(self):
-        if self._dead():
+    def get(self):
+        if self._obj is None:
+            return self._method
+        elif self._obj() is not None:
+            return WeakCallable(self._obj(), self._method)
+        else:
             return None
-        return WeakCallable(self._obj(), self._meth)
 
-    def _dead(self):
+    def dead(self):
         return self._obj is not None and self._obj() is None
+
+    def __call__(self, *args, **kwargs):
+        method = self.get()
+        if method is None:
+            raise WeakMethodInvalid()
+        return method(*args, **kwargs)
 
 
 class EventSubject:
@@ -65,7 +68,7 @@ class EventSubject:
             to_remove = []
             for fn in self.subscribers[name]:
                 if isinstance(fn, WeakMethod):
-                    if fn() is None:
+                    if fn.dead():
                         to_remove.append(fn)
 
             for fn in to_remove:
@@ -83,19 +86,13 @@ class EventSubject:
             raise TypeError("Expecting callable type")
         if name not in self.subscribers:
             self.subscribers[name] = []
-        self.subscribers[name].append(func)
-
-    def subscribe_weak(self, name, func):
-        self.subscribe(name, WeakMethod(func))
+        self.subscribers[name].append(WeakMethod(func))
 
     def notify(self, name, *args):
         i = 0
         if self.cleanup(name) is not None:
             for fn in self.subscribers[name]:
-                if isinstance(fn, WeakMethod):
-                    fn()(*args)
-                else:
-                    fn(*args)
+                fn(*args)
                 i += 1
         return i
 

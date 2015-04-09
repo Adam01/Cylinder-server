@@ -49,7 +49,7 @@ class SlaveConnectionHandler(basic.LineReceiver):
                 if not self.factory.register_slave(self.username):
                     self.disconnect()
                 else:
-                    self.factory.subscribe_weak("in." + self.username,
+                    self.factory.subscribe("in." + self.username,
                                                 self.sendObject)
                     log.msg("%s's slave connected" % self.username)
             else:
