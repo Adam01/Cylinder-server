@@ -157,17 +157,22 @@ class FileSystemProcedures(JSONCallable, EventSubject):
         path = self.correct_path(path)
 
         fsdir = FileSystemDirectory(path)
-        new_file = fsdir.create_file(name, contents)
-
-        return self.complete_task(True, {path: new_file.get_path()})
+        try:
+            new_file = fsdir.create_file(name, contents)
+        except OSError, e:
+            return self.raise_error(str(e))
+        return self.complete_task(True, {"path": new_file.get_path()})
 
     def jsonrpc_create_directory(self, path, name):
         path = self.correct_path(path)
 
         fsdir = FileSystemDirectory(path)
-        new_dir = fsdir.create_directory(name)
+        try:
+            new_dir = fsdir.create_directory(name)
+        except OSError, e:
+            return self.raise_error(str(e))
 
-        return self.complete_task(True, {path: new_dir.get_path()})
+        return self.complete_task(True, {"path": new_dir.get_path()})
 
     def jsonrpc_move_entity(self, source, target):
         source = self.correct_path(source)
@@ -183,9 +188,12 @@ class FileSystemProcedures(JSONCallable, EventSubject):
         if target_dir.exists(target_name):
             raise self.raise_error("Target entity already exists")
 
-        entity.move_to(target_dir, target_name)
+        try:
+            entity.move_to(target_dir, target_name)
+        except OSError, e:
+            return self.raise_error(str(e))
 
-        return self.complete_task(True, {source: source, target: target})
+        return self.complete_task(True, {"source": source, "target": target})
 
     def jsonrpc_copy_entity(self, source, target):
         source = self.correct_path(source)
@@ -208,15 +216,21 @@ class FileSystemProcedures(JSONCallable, EventSubject):
                                       total)
             return handler.initialise(entity, target_dir, target_name)
         elif isinstance(entity, FileSystemFile):
-            entity.copy_to(target_dir, target_name)
-            return self.complete_task(True, {source: source, target: target})
+            try:
+                entity.copy_to(target_dir, target_name)
+            except OSError, e:
+                return self.raise_error(str(e))
+            return self.complete_task(True, {"source": source, "target": target})
         else:
             self.raise_error("Unhandled file type")
 
     def jsonrpc_remove_entity(self, path):
         path = self.correct_path(path)
         entity = FileSystemEntity(path)
-        entity.remove()
+        try:
+            entity.remove()
+        except OSError, e:
+            return self.raise_error(str(e))
 
         return self.complete_task(True, path)
 
@@ -252,5 +266,8 @@ class FileSystemProcedures(JSONCallable, EventSubject):
 
         file = FileSystemFile(path)
         data = data.decode("utf-8")
-        file.set_contents(data, encoding)
+        try:
+            file.set_contents(data, encoding)
+        except OSError, e:
+            return self.raise_error(str(e))
         return self.complete_task(True)
